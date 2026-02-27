@@ -1,4 +1,4 @@
-const { createClient } = require("@supabase/supabase-js");
+import { createClient } from "@supabase/supabase-js";
 
 function badRequest(res, status, error) {
   return res.status(status).json({ error });
@@ -25,7 +25,7 @@ async function getCount(builderPromise) {
   return Number(count || 0);
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "GET") {
     return badRequest(res, 405, "Method not allowed");
   }
@@ -104,4 +104,4 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     return badRequest(res, 500, error?.message || "Failed to load admin metrics");
   }
-};
+}
