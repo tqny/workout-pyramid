@@ -5,6 +5,16 @@ import { isSupabaseConfigured, supabase } from "../app/supabase-client";
 
 const SYNC_TABLE = "user_app_state";
 
+function toAuthErrorMessage(message) {
+  const text = String(message || "").toLowerCase();
+  if (text.includes("invalid login credentials")) return "Email or password is incorrect.";
+  if (text.includes("email not confirmed")) return "Email not confirmed yet. Use resend verification email below.";
+  if (text.includes("user already registered")) return "This email already has an account. Sign in or reset password.";
+  if (text.includes("password should be at least")) return "Password must be at least 6 characters.";
+  if (text.includes("you can only request this after")) return "You requested this recently. Try again in about a minute.";
+  return message || "Authentication failed. Please try again.";
+}
+
 function normalizeRemotePayload(row) {
   return {
     store: normalizeStore(row?.store || { days: {} }),
@@ -17,6 +27,7 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
   const [authMode, setAuthMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [user, setUser] = useState(null);
   const [status, setStatus] = useState(isSupabaseConfigured ? "idle" : "unconfigured");
   const [error, setError] = useState("");
@@ -211,9 +222,21 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
       setError("");
       setStatus("idle");
 
+      if (event === "PASSWORD_RECOVERY") {
+        setAuthMode("reset");
+        onNotice?.({
+          tone: "info",
+          text: "Recovery link detected. Set your new password now.",
+        });
+        return;
+      }
+
       // Avoid full cloud pull/bootstrap churn for token refresh events.
       if (!nextUser || (event !== "SIGNED_IN" && event !== "INITIAL_SESSION")) {
         if (!nextUser) {
+          setAuthMode("signin");
+          setPassword("");
+          setConfirmPassword("");
           bootstrappedUserIdRef.current = null;
         }
         return;
@@ -236,7 +259,7 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
       active = false;
       subscription?.unsubscribe();
     };
-  }, [bootstrapCloudRow, isConfigured, pullFromCloud]);
+  }, [bootstrapCloudRow, isConfigured, onNotice, pullFromCloud]);
 
   useEffect(() => {
     if (!isConfigured || !user) return undefined;
@@ -246,6 +269,12 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
     return () => clearTimeout(timer);
   }, [isConfigured, payloadJson, pushToCloud, user]);
 
+  function resolveRedirectOrigin() {
+    return typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : undefined;
+  }
+
   async function signIn() {
     if (!isConfigured) return false;
     setStatus("auth");
@@ -253,10 +282,11 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError) {
       setStatus("error");
-      setError(signInError.message || "Sign in failed.");
+      setError(toAuthErrorMessage(signInError.message || "Sign in failed."));
       return false;
     }
     setStatus("idle");
+    setAuthMode("signin");
     return true;
   }
 
@@ -264,10 +294,7 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
     if (!isConfigured) return false;
     setStatus("auth");
     setError("");
-    const emailRedirectTo =
-      typeof window !== "undefined" && window.location?.origin
-        ? window.location.origin
-        : undefined;
+    const emailRedirectTo = resolveRedirectOrigin();
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -275,17 +302,106 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
     });
     if (signUpError) {
       setStatus("error");
-      setError(signUpError.message || "Sign up failed.");
+      setError(toAuthErrorMessage(signUpError.message || "Sign up failed."));
       return false;
     }
 
     setStatus("idle");
+    setAuthMode("signin");
     if (!data.session) {
       onNotice?.({
         tone: "info",
         text: "Check your email to confirm your account, then sign in.",
       });
     }
+    return true;
+  }
+
+  async function sendPasswordReset() {
+    if (!isConfigured) return false;
+    if (!email.trim()) {
+      setError("Enter your email first.");
+      return false;
+    }
+
+    setStatus("auth");
+    setError("");
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: resolveRedirectOrigin(),
+    });
+
+    if (resetError) {
+      setStatus("error");
+      setError(toAuthErrorMessage(resetError.message || "Could not send password reset email."));
+      return false;
+    }
+
+    setStatus("idle");
+    onNotice?.({
+      tone: "info",
+      text: "Password reset email sent. Open it and return here to set a new password.",
+    });
+    return true;
+  }
+
+  async function resendVerificationEmail() {
+    if (!isConfigured) return false;
+    if (!email.trim()) {
+      setError("Enter your email first.");
+      return false;
+    }
+
+    setStatus("auth");
+    setError("");
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: { emailRedirectTo: resolveRedirectOrigin() },
+    });
+
+    if (resendError) {
+      setStatus("error");
+      setError(toAuthErrorMessage(resendError.message || "Could not resend verification email."));
+      return false;
+    }
+
+    setStatus("idle");
+    onNotice?.({
+      tone: "info",
+      text: "Verification email sent. Check inbox and spam.",
+    });
+    return true;
+  }
+
+  async function updateRecoveredPassword() {
+    if (!isConfigured) return false;
+    if (password.trim().length < 6) {
+      setError("Password must be at least 6 characters.");
+      return false;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return false;
+    }
+
+    setStatus("auth");
+    setError("");
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+
+    if (updateError) {
+      setStatus("error");
+      setError(toAuthErrorMessage(updateError.message || "Could not update password."));
+      return false;
+    }
+
+    setStatus("idle");
+    setAuthMode("signin");
+    setPassword("");
+    setConfirmPassword("");
+    onNotice?.({
+      tone: "positive",
+      text: "Password updated. Sign in with your new password.",
+    });
     return true;
   }
 
@@ -296,6 +412,9 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
     await supabase.auth.signOut();
     setUser(null);
     setStatus("idle");
+    setAuthMode("signin");
+    setPassword("");
+    setConfirmPassword("");
   }
 
   async function syncNow() {
@@ -321,8 +440,13 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
     setEmail,
     password,
     setPassword,
+    confirmPassword,
+    setConfirmPassword,
     signIn,
     signUp,
+    sendPasswordReset,
+    resendVerificationEmail,
+    updateRecoveredPassword,
     signOut,
     syncNow,
   };

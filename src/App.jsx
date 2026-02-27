@@ -10,6 +10,7 @@ import {
   startOfWeekMonday,
   toISODate,
 } from "./app/date-utils";
+import { hasSeenOnboarding, markOnboardingSeen } from "./app/onboarding-utils";
 import { calculateStreaks, statusFromEntry } from "./app/store-utils";
 import { THEME } from "./app/theme";
 import { CommitmentModal } from "./components/CommitmentModal";
@@ -19,6 +20,7 @@ import { HeaderCard } from "./components/HeaderCard";
 import { InstallAppModal } from "./components/InstallAppModal";
 import { MonthView } from "./components/MonthView";
 import { ProductActionsBar } from "./components/ProductActionsBar";
+import { WelcomeModal } from "./components/WelcomeModal";
 import { WeekView } from "./components/WeekView";
 import { WeeklyReviewModal } from "./components/WeeklyReviewModal";
 import { useCommitmentFlow } from "./hooks/useCommitmentFlow";
@@ -39,6 +41,7 @@ export default function App() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(() => !hasSeenOnboarding());
   const [notice, setNotice] = useState(null);
   const [templateDays, setTemplateDays] = useState([0, 2, 4, 5]);
   const [templateTime, setTemplateTime] = useState("18:00");
@@ -211,6 +214,21 @@ export default function App() {
     dayEditor.openDayEditor(iso);
   }
 
+  function closeWelcomeModal() {
+    markOnboardingSeen();
+    setShowWelcomeModal(false);
+  }
+
+  function openCloudFromWelcome() {
+    closeWelcomeModal();
+    setShowCloudSyncModal(true);
+  }
+
+  function openInstallFromWelcome() {
+    closeWelcomeModal();
+    setShowInstallModal(true);
+  }
+
   function handleMonthCellClick(iso) {
     setMonthFocusISO(iso);
   }
@@ -355,7 +373,7 @@ export default function App() {
       </div>
 
       <CommitmentModal
-        open={commitment.isCommitModalOpen}
+        open={!showWelcomeModal && commitment.isCommitModalOpen}
         onClose={commitment.closeCommitModal}
         step={commitment.commitStep}
         commitTime={commitment.commitTime}
@@ -381,8 +399,13 @@ export default function App() {
       />
 
       <CloudSyncModal
-        open={showCloudSyncModal}
-        onClose={() => setShowCloudSyncModal(false)}
+        open={showCloudSyncModal || cloudSync.authMode === "reset"}
+        onClose={() => {
+          if (cloudSync.authMode === "reset") {
+            cloudSync.setAuthMode("signin");
+          }
+          setShowCloudSyncModal(false);
+        }}
         cloudSync={cloudSync}
       />
 
@@ -401,6 +424,13 @@ export default function App() {
           }
           setShowInstallModal(false);
         }}
+      />
+
+      <WelcomeModal
+        open={showWelcomeModal}
+        onClose={closeWelcomeModal}
+        onOpenCloudSync={openCloudFromWelcome}
+        onOpenInstall={openInstallFromWelcome}
       />
 
       <WeeklyReviewModal

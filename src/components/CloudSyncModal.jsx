@@ -24,13 +24,40 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
     setEmail,
     password,
     setPassword,
+    confirmPassword,
+    setConfirmPassword,
     signIn,
     signUp,
+    sendPasswordReset,
+    resendVerificationEmail,
+    updateRecoveredPassword,
     signOut,
     syncNow,
   } = cloudSync;
 
-  const signedIn = !!user;
+  const recoveryMode = authMode === "reset";
+  const signedIn = !!user && !recoveryMode;
+  const authLinkStyle = {
+    border: "none",
+    background: "transparent",
+    padding: 0,
+    margin: 0,
+    color: "#1d4ed8",
+    fontSize: 12,
+    fontWeight: 800,
+    cursor: "pointer",
+    textAlign: "left",
+  };
+  const authTabActiveStyle = {
+    background: "rgba(219,234,254,0.55)",
+    border: "1px solid rgba(37,99,235,0.2)",
+    boxShadow: "none",
+  };
+  const authTabIdleStyle = {
+    background: "#fff",
+    border: "1px solid #dfe5ee",
+    boxShadow: "none",
+  };
 
   return (
     <ModalShell open={open} onClose={onClose}>
@@ -71,7 +98,14 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
           }}
         >
           <div style={{ fontWeight: 900 }}>Status: {statusLabel(status)}</div>
-          {signedIn ? <div style={{ marginTop: 3 }}>Signed in as {userEmail}</div> : <div style={{ marginTop: 3 }}>Not signed in</div>}
+          {userEmail ? (
+            <div style={{ marginTop: 3 }}>Signed in as {userEmail}</div>
+          ) : email ? (
+            <div style={{ marginTop: 3 }}>Email: {email}</div>
+          ) : (
+            <div style={{ marginTop: 3 }}>Not signed in</div>
+          )}
+          {recoveryMode ? <div style={{ marginTop: 3, fontWeight: 800 }}>Password recovery in progress</div> : null}
           {lastSyncedAt ? <div style={{ marginTop: 3 }}>Last sync: {new Date(lastSyncedAt).toLocaleString()}</div> : null}
         </div>
 
@@ -91,15 +125,82 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
           </div>
         )}
 
-        {isConfigured && !signedIn && (
+        {isConfigured && recoveryMode && (
+          <>
+            <div
+              style={{
+                borderRadius: 12,
+                padding: "10px 12px",
+                background: "rgba(219,234,254,0.55)",
+                border: "1px solid rgba(37,99,235,0.18)",
+                fontSize: 13,
+                lineHeight: 1.4,
+              }}
+            >
+              Set a new password to complete recovery.
+            </div>
+
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>New password</div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                aria-label="Cloud sync new password"
+                placeholder="At least 6 characters"
+                style={{
+                  width: "100%",
+                  borderRadius: 14,
+                  border: "1px solid #e6e9ef",
+                  padding: "10px 12px",
+                  fontSize: 14,
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>Confirm password</div>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                aria-label="Cloud sync confirm password"
+                placeholder="Repeat password"
+                style={{
+                  width: "100%",
+                  borderRadius: 14,
+                  border: "1px solid #e6e9ef",
+                  padding: "10px 12px",
+                  fontSize: 14,
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <Button
+                onClick={updateRecoveredPassword}
+                disabled={!password || !confirmPassword || isBusy}
+                style={{ flex: 1 }}
+              >
+                Update password
+              </Button>
+              <Button onClick={() => setAuthMode("signin")} style={{ flex: 1, opacity: 0.85 }}>
+                Back to sign in
+              </Button>
+            </div>
+          </>
+        )}
+
+        {isConfigured && !signedIn && !recoveryMode && (
           <>
             <div style={{ display: "flex", gap: 8 }}>
               <Button
                 onClick={() => setAuthMode("signin")}
                 style={{
                   flex: 1,
-                  background: authMode === "signin" ? "rgba(219,234,254,0.55)" : "#fff",
-                  border: authMode === "signin" ? "1px solid rgba(37,99,235,0.2)" : undefined,
+                  ...(authMode === "signin" ? authTabActiveStyle : authTabIdleStyle),
                 }}
               >
                 Sign in
@@ -108,8 +209,7 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
                 onClick={() => setAuthMode("signup")}
                 style={{
                   flex: 1,
-                  background: authMode === "signup" ? "rgba(187,247,208,0.65)" : "#fff",
-                  border: authMode === "signup" ? "1px solid rgba(16,185,129,0.25)" : undefined,
+                  ...(authMode === "signup" ? authTabActiveStyle : authTabIdleStyle),
                 }}
               >
                 Create account
@@ -167,6 +267,25 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
               <Button onClick={onClose} style={{ flex: 1, opacity: 0.85 }}>
                 Close
               </Button>
+            </div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "space-between" }}>
+              <button
+                type="button"
+                onClick={sendPasswordReset}
+                disabled={!email || isBusy}
+                style={{ ...authLinkStyle, opacity: !email || isBusy ? 0.5 : 1, cursor: !email || isBusy ? "not-allowed" : "pointer" }}
+              >
+                Forgot password
+              </button>
+              <button
+                type="button"
+                onClick={resendVerificationEmail}
+                disabled={!email || isBusy}
+                style={{ ...authLinkStyle, opacity: !email || isBusy ? 0.5 : 1, cursor: !email || isBusy ? "not-allowed" : "pointer" }}
+              >
+                Resend verification email
+              </button>
             </div>
           </>
         )}

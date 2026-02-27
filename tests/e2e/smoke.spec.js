@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const STORE_KEY = 'workout_pyramid_store_v1';
+const ONBOARDING_SEEN_KEY = 'workout_pyramid_onboarding_seen_v1';
 
 function isoDate(date = new Date()) {
   const y = date.getFullYear();
@@ -25,10 +26,11 @@ function nextMondayISO() {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(({ key }) => {
+  await page.addInitScript(({ key, onboardingKey }) => {
     localStorage.removeItem(key);
     localStorage.removeItem('workout_pyramid_last_commit_check');
-  }, { key: STORE_KEY });
+    localStorage.setItem(onboardingKey, '1');
+  }, { key: STORE_KEY, onboardingKey: ONBOARDING_SEEN_KEY });
 });
 
 test('loads dashboard and toggles week/month views', async ({ page }) => {
