@@ -54,3 +54,20 @@ Playwright/browser artifacts are ignored by git:
 - `.playwright-browsers`
 - `playwright-report`
 - `test-results`
+
+## Admin Metrics (Optional)
+
+An admin-only metrics modal is available for account and sync monitoring.
+
+1. Set server-side env vars in Vercel:
+   - `SUPABASE_URL` = your Supabase project URL
+   - `SUPABASE_SERVICE_ROLE_KEY` = Supabase service role key (secret)
+   - `ADMIN_METRICS_KEY` = your own admin passphrase
+2. Open the app with `?admin=1`:
+   - `https://workout-pyramid.vercel.app/?admin=1`
+3. Click `Admin metrics` and enter your admin passphrase.
+
+Security:
+
+- Keep `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_METRICS_KEY` secret.
+- The metrics endpoint runs server-side and requires `x-admin-metrics-key`.

@@ -35,21 +35,57 @@ create table if not exists public.user_app_state (
 
 alter table public.user_app_state enable row level security;
 
-create policy if not exists "Users can read own state"
-on public.user_app_state
-for select
-using (auth.uid() = user_id);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_catalog.pg_policies
+    where schemaname = 'public'
+      and tablename = 'user_app_state'
+      and policyname = 'Users can read own state'
+  ) then
+    create policy "Users can read own state"
+    on public.user_app_state
+    for select
+    using ((select auth.uid()) = user_id);
+  end if;
+end
+$$;
 
-create policy if not exists "Users can insert own state"
-on public.user_app_state
-for insert
-with check (auth.uid() = user_id);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_catalog.pg_policies
+    where schemaname = 'public'
+      and tablename = 'user_app_state'
+      and policyname = 'Users can insert own state'
+  ) then
+    create policy "Users can insert own state"
+    on public.user_app_state
+    for insert
+    with check ((select auth.uid()) = user_id);
+  end if;
+end
+$$;
 
-create policy if not exists "Users can update own state"
-on public.user_app_state
-for update
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_catalog.pg_policies
+    where schemaname = 'public'
+      and tablename = 'user_app_state'
+      and policyname = 'Users can update own state'
+  ) then
+    create policy "Users can update own state"
+    on public.user_app_state
+    for update
+    using ((select auth.uid()) = user_id)
+    with check ((select auth.uid()) = user_id);
+  end if;
+end
+$$;
 ```
 
 ## 4) Enable Email/Password auth
@@ -69,3 +105,7 @@ In Supabase Authentication -> Providers:
 
 - Local backup export/import still works without Supabase.
 - Free tier is enough for personal use/testing.
+- Optional admin metrics API (Vercel) needs server env vars:
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `ADMIN_METRICS_KEY`

@@ -9,6 +9,8 @@ export function ProductActionsBar({
   installTone = "info",
   onOpenInstall,
   disableInstall = false,
+  showAdminMetricsAction = false,
+  onOpenAdminMetrics,
   onOpenReview,
   notice,
 }) {
@@ -70,6 +72,18 @@ export function ProductActionsBar({
         >
           {installLabel}
         </Button>
+        {showAdminMetricsAction ? (
+          <Button
+            onClick={onOpenAdminMetrics}
+            style={{
+              flex: "1 1 160px",
+              background: "rgba(254,243,199,0.7)",
+              border: "1px solid rgba(202,138,4,0.2)",
+            }}
+          >
+            Admin metrics
+          </Button>
+        ) : null}
       </div>
 
       {notice?.text && (

@@ -13,6 +13,7 @@ import {
 import { hasSeenOnboarding, markOnboardingSeen } from "./app/onboarding-utils";
 import { calculateStreaks, statusFromEntry } from "./app/store-utils";
 import { THEME } from "./app/theme";
+import { AdminMetricsModal } from "./components/AdminMetricsModal";
 import { CommitmentModal } from "./components/CommitmentModal";
 import { CloudSyncModal } from "./components/CloudSyncModal";
 import { DayEditorModal } from "./components/DayEditorModal";
@@ -42,6 +43,7 @@ export default function App() {
   const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => !hasSeenOnboarding());
+  const [showAdminMetricsModal, setShowAdminMetricsModal] = useState(false);
   const [notice, setNotice] = useState(null);
   const [templateDays, setTemplateDays] = useState([0, 2, 4, 5]);
   const [templateTime, setTemplateTime] = useState("18:00");
@@ -209,6 +211,11 @@ export default function App() {
       ? "Add to Home Screen"
       : "Install app";
   const installTone = installPrompt.isStandalone ? "positive" : "info";
+  const showAdminMetricsAction = (() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get("admin") === "1" || window.location.hostname === "localhost";
+  })();
 
   function openDayEditor(iso) {
     dayEditor.openDayEditor(iso);
@@ -326,6 +333,8 @@ export default function App() {
           installTone={installTone}
           onOpenInstall={() => setShowInstallModal(true)}
           disableInstall={installPrompt.isStandalone}
+          showAdminMetricsAction={showAdminMetricsAction}
+          onOpenAdminMetrics={() => setShowAdminMetricsModal(true)}
           onOpenReview={() => setShowReviewModal(true)}
           notice={notice}
         />
@@ -424,6 +433,11 @@ export default function App() {
           }
           setShowInstallModal(false);
         }}
+      />
+
+      <AdminMetricsModal
+        open={showAdminMetricsModal}
+        onClose={() => setShowAdminMetricsModal(false)}
       />
 
       <WelcomeModal
