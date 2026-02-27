@@ -1,4 +1,5 @@
 import { nowTimestampISO, toISODate } from "./date-utils";
+import { statusSurface } from "./theme";
 
 const STORAGE_KEY = "workout_pyramid_store_v1";
 const COMMIT_KEY = "workout_pyramid_last_commit_check";
@@ -121,23 +122,5 @@ export function calculateStreaks(store) {
 }
 
 export function statusStyle(status) {
-  if (status === "completed") {
-    return {
-      background: "rgba(187, 247, 208, 0.65)",
-      border: "1px solid rgba(16,185,129,0.18)",
-    };
-  }
-  if (status === "planned") {
-    return {
-      background: "rgba(253, 230, 92, 0.42)",
-      border: "1px solid rgba(202,138,4,0.22)",
-    };
-  }
-  if (status === "skipped") {
-    return {
-      background: "rgba(254, 202, 202, 0.60)",
-      border: "1px solid rgba(239,68,68,0.18)",
-    };
-  }
-  return { background: "#ffffff", border: "1px solid #e6e9ef" };
+  return statusSurface(status);
 }

@@ -1,5 +1,6 @@
 import React from "react";
 import { toISODate } from "../app/date-utils";
+import { THEME, toneStyle } from "../app/theme";
 import { statusFromEntry, statusStyle } from "../app/store-utils";
 
 export function WeekDayTile({
@@ -21,12 +22,12 @@ export function WeekDayTile({
   const dayStamp = new Date(iso + "T00:00:00").getTime();
   const todayStamp = new Date(todayISO + "T00:00:00").getTime();
   const isFutureDay = dayStamp > todayStamp;
-  const emptyPushLabel = isToday ? "Clock's ticking" : isFutureDay ? "Don't flake" : "Be honest";
+  const emptyPushLabel = isToday ? "Bar's loaded" : isFutureDay ? "No excuses, champ" : "Own the log";
   const emptyDetailLabel = isToday
-    ? "Decide your outcome."
+    ? "Log the reps."
     : isFutureDay
-      ? "Claim a time now."
-      : "Log what happened.";
+      ? "Claim your time slot."
+      : "Record what happened.";
 
   function stopTileOpen(e) {
     e.preventDefault();
@@ -61,8 +62,8 @@ export function WeekDayTile({
         width: "100%",
         transition: "transform 120ms ease, box-shadow 120ms ease",
         boxShadow: isToday
-          ? "0 0 0 2px rgba(17,24,39,0.55), 0 14px 28px rgba(17,24,39,0.10)"
-          : "0 12px 24px rgba(17,24,39,0.08)",
+          ? "0 0 0 2px rgba(34,211,238,0.45), 0 14px 28px rgba(0,0,0,0.32)"
+          : "0 12px 24px rgba(0,0,0,0.28)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -75,15 +76,15 @@ export function WeekDayTile({
       onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
       onFocus={(e) => {
         if (!e.currentTarget.matches(":focus-visible")) return;
-        e.currentTarget.style.boxShadow = `0 0 0 3px rgba(59,130,246,0.28), ${isToday
-          ? "0 0 0 2px rgba(17,24,39,0.55), 0 14px 28px rgba(17,24,39,0.10)"
-          : "0 12px 24px rgba(17,24,39,0.08)"
+        e.currentTarget.style.boxShadow = `0 0 0 3px ${THEME.focusRing}, ${isToday
+          ? "0 0 0 2px rgba(34,211,238,0.45), 0 14px 28px rgba(0,0,0,0.32)"
+          : "0 12px 24px rgba(0,0,0,0.28)"
           }`;
       }}
       onBlur={(e) => {
         e.currentTarget.style.boxShadow = isToday
-          ? "0 0 0 2px rgba(17,24,39,0.55), 0 14px 28px rgba(17,24,39,0.10)"
-          : "0 12px 24px rgba(17,24,39,0.08)";
+          ? "0 0 0 2px rgba(34,211,238,0.45), 0 14px 28px rgba(0,0,0,0.32)"
+          : "0 12px 24px rgba(0,0,0,0.28)";
         e.currentTarget.style.transform = "translateY(0px)";
       }}
     >
@@ -103,9 +104,9 @@ export function WeekDayTile({
             lineHeight: 1.15,
           }}
         >
-          {status === "completed" && "Completed"}
-          {status === "planned" && "Planned"}
-          {status === "skipped" && "Skipped"}
+          {status === "completed" && "Crushed it"}
+          {status === "planned" && "Locked in"}
+          {status === "skipped" && "Benched"}
           {status === "empty" && emptyPushLabel}
         </div>
       </div>
@@ -134,9 +135,7 @@ export function WeekDayTile({
                 justifyContent: "center",
                 padding: compactWeekTile ? "3px 7px" : "4px 8px",
                 borderRadius: 999,
-                border: "1px solid rgba(16,185,129,0.25)",
-                background: "rgba(187,247,208,0.70)",
-                color: "#0f172a",
+                ...toneStyle("positive"),
                 fontSize: compactWeekTile ? 9 : 10,
                 fontWeight: 900,
                 lineHeight: 1,
@@ -146,7 +145,7 @@ export function WeekDayTile({
               }}
               onFocus={(e) => {
                 if (!e.currentTarget.matches(":focus-visible")) return;
-                e.currentTarget.style.boxShadow = "0 0 0 2px rgba(59,130,246,0.35)";
+                e.currentTarget.style.boxShadow = `0 0 0 2px ${THEME.focusRing}`;
               }}
               onBlur={(e) => {
                 e.currentTarget.style.boxShadow = "none";
@@ -168,9 +167,7 @@ export function WeekDayTile({
                 justifyContent: "center",
                 padding: compactWeekTile ? "3px 7px" : "4px 8px",
                 borderRadius: 999,
-                border: "1px solid rgba(17,24,39,0.12)",
-                background: "rgba(255,255,255,0.88)",
-                color: "#111827",
+                ...toneStyle("neutral"),
                 fontSize: compactWeekTile ? 9 : 10,
                 fontWeight: 900,
                 lineHeight: 1,
@@ -180,7 +177,7 @@ export function WeekDayTile({
               }}
               onFocus={(e) => {
                 if (!e.currentTarget.matches(":focus-visible")) return;
-                e.currentTarget.style.boxShadow = "0 0 0 2px rgba(59,130,246,0.35)";
+                e.currentTarget.style.boxShadow = `0 0 0 2px ${THEME.focusRing}`;
               }}
               onBlur={(e) => {
                 e.currentTarget.style.boxShadow = "none";
@@ -217,7 +214,7 @@ export function WeekDayTile({
             justifyContent: "center",
             pointerEvents: "none",
             fontSize: compactWeekTile ? 26 : 34,
-            color: "rgba(17,24,39,0.45)",
+            color: "rgba(233,248,240,0.4)",
             fontWeight: 800,
           }}
         >
@@ -233,8 +230,8 @@ export function WeekDayTile({
             bottom: compactWeekTile ? 8 : 12,
             padding: compactWeekTile ? "2px 6px" : "3px 8px",
             borderRadius: 999,
-            background: "rgba(147,197,253,0.55)",
-            color: "#0b1220",
+            background: "rgba(34,211,238,0.22)",
+            color: "#d7fbff",
             fontSize: compactWeekTile ? 10 : 11,
             fontWeight: 900,
           }}

@@ -1,5 +1,6 @@
 import React from "react";
 import { toISODate } from "../app/date-utils";
+import { THEME } from "../app/theme";
 import { statusFromEntry, statusStyle } from "../app/store-utils";
 
 export function MonthCell({
@@ -21,11 +22,11 @@ export function MonthCell({
   const dayStamp = new Date(iso + "T00:00:00").getTime();
   const todayStamp = new Date(todayISO + "T00:00:00").getTime();
   const isFutureDay = dayStamp > todayStamp;
-  const emptyPushLabel = dayStamp === todayStamp ? "Clock's ticking" : isFutureDay ? "Don't flake" : "Be honest";
+  const emptyPushLabel = dayStamp === todayStamp ? "Bar's loaded" : isFutureDay ? "No excuses, champ" : "Own the log";
   const ariaLabel = `${dateObj.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}, ${status}`;
   const restingShadow = isToday
-    ? "0 0 0 1.5px rgba(17,24,39,0.28), 0 6px 14px rgba(17,24,39,0.06)"
-    : "0 4px 10px rgba(17,24,39,0.04)";
+    ? "0 0 0 1.5px rgba(34,211,238,0.45), 0 6px 14px rgba(0,0,0,0.3)"
+    : "0 4px 10px rgba(0,0,0,0.24)";
 
   function shouldReduceMotion() {
     if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -50,7 +51,7 @@ export function MonthCell({
         width: "100%",
         opacity: inMonth ? 1 : 0.55,
         boxShadow: restingShadow,
-        outline: isSelected ? "2px solid rgba(17,24,39,0.48)" : "none",
+        outline: isSelected ? "2px solid rgba(34,211,238,0.6)" : "none",
         outlineOffset: 0,
         transition: "transform 120ms ease, box-shadow 120ms ease",
         overflow: "hidden",
@@ -61,7 +62,7 @@ export function MonthCell({
       onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
       onFocus={(e) => {
         if (!e.currentTarget.matches(":focus-visible")) return;
-        e.currentTarget.style.boxShadow = `0 0 0 3px rgba(59,130,246,0.28), ${restingShadow}`;
+        e.currentTarget.style.boxShadow = `0 0 0 3px ${THEME.focusRing}, ${restingShadow}`;
       }}
       onBlur={(e) => {
         e.currentTarget.style.transform = "translateY(0px)";
@@ -75,7 +76,7 @@ export function MonthCell({
             style={{
               padding: compact ? "2px 5px" : "2px 8px",
               borderRadius: 999,
-              background: "rgba(147,197,253,0.55)",
+              background: "rgba(34,211,238,0.22)",
               fontSize: compact ? 10 : 11,
               fontWeight: 900,
             }}
@@ -88,11 +89,11 @@ export function MonthCell({
       {!compact && (
         <div style={{ marginTop: 6, fontSize: 12, opacity: 0.75 }}>
           {status === "completed"
-            ? "Completed"
+            ? "Crushed it"
             : status === "planned"
-              ? "Planned"
+              ? "Locked in"
               : status === "skipped"
-                ? "Skipped"
+                ? "Benched"
                 : emptyPushLabel}
         </div>
       )}
@@ -109,10 +110,10 @@ export function MonthCell({
             borderRadius: 999,
             background:
               status === "completed"
-                ? "rgba(16,185,129,0.85)"
+                ? "rgba(74,222,128,0.95)"
                 : status === "planned"
-                  ? "rgba(234,179,8,0.85)"
-                  : "rgba(239,68,68,0.8)",
+                  ? "rgba(250,204,21,0.95)"
+                  : "rgba(248,113,113,0.9)",
           }}
         />
       )}

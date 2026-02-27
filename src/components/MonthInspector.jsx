@@ -1,5 +1,6 @@
 import React from "react";
 import { formatAuditTimestamp } from "../app/date-utils";
+import { THEME, toneStyle } from "../app/theme";
 import { statusStyle } from "../app/store-utils";
 import { Button, Pill } from "./ui";
 
@@ -22,15 +23,15 @@ export function MonthInspector({
   const todayStamp = new Date(todayISO + "T00:00:00").getTime();
   const isFutureSelected = selectedStamp != null && selectedStamp > todayStamp;
   const isPastSelected = selectedStamp != null && selectedStamp < todayStamp;
-  const emptyPushLabel = isSelectedToday ? "Clock's ticking" : isFutureSelected ? "Don't flake" : "Be honest";
+  const emptyPushLabel = isSelectedToday ? "Bar's loaded" : isFutureSelected ? "No excuses, champ" : "Own the log";
 
   return (
     <Pill
       style={{
         borderRadius: 18,
         padding: 14,
-        background: "rgba(255,255,255,0.90)",
-        boxShadow: "0 8px 20px rgba(17,24,39,0.05)",
+        background: "rgba(10,20,17,0.92)",
+        boxShadow: THEME.shadowSoft,
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -99,7 +100,7 @@ export function MonthInspector({
         )}
 
         {isSelectedToday && isPastPlannedTime && (
-          <div style={{ fontSize: 12, fontWeight: 800, color: "#92400e" }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: THEME.accent.yellow }}>
             Planned for {overduePlannedTimeLabel}
             {overdueDurationLabel ? ` (${overdueDurationLabel})` : ""}. Update this so your log stays accurate.
           </div>
@@ -115,8 +116,7 @@ export function MonthInspector({
                 <Button
                   onClick={onMarkTodayCompleted}
                   style={{
-                    background: "rgba(187,247,208,0.65)",
-                    border: "1px solid rgba(16,185,129,0.25)",
+                    ...toneStyle("positive"),
                   }}
                 >
                   Mark done

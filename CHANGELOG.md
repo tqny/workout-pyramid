@@ -7,9 +7,12 @@ All notable changes to this project are documented in this file.
 ### Added
 - Evidence-first governance artifacts (`docs/*`, `.github/*`, `scripts/check-evidence.sh`).
 - Retroactive ADR/demo/metrics backfill set for historical project decisions and shipped features.
+- Matrix x Tetris-inspired visual theme tokens and shared tone/status palette.
+- Gym-bro humor microcopy for empty/future-day nudges in week/month surfaces.
 
 ### Changed
 - README and contribution workflow updated to enforce auditable delivery standards.
+- Core dashboard surfaces (header, action bar, week/month cards, inspector) now use a darker neon-accent style system for stronger visual identity and state contrast.
 
 ## [0.6.0] - 2026-02-26
 Recorded retrospectively on 2026-02-27.

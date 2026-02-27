@@ -1,5 +1,6 @@
 import React from "react";
 import { addDays, isSameWeekMonday, toISODate } from "../app/date-utils";
+import { THEME } from "../app/theme";
 import { Button } from "./ui";
 import { MonthCell } from "./MonthCell";
 import { MonthInspector } from "./MonthInspector";
@@ -53,7 +54,7 @@ export function MonthView({
               gridTemplateColumns: "repeat(7, 1fr)",
               gap: isCompactMonthGrid ? 6 : 10,
               padding: "0 8px",
-              color: "rgba(11,18,32,0.60)",
+              color: THEME.inkMuted,
               fontSize: isCompactMonthGrid ? 11 : 12,
               fontWeight: 800,
             }}
@@ -81,8 +82,8 @@ export function MonthView({
                     padding: isCompactMonthGrid ? 1 : 2,
                     borderRadius: 14,
                     transition: "box-shadow 160ms ease, background 160ms ease",
-                    boxShadow: isFocusedWeek ? "inset 0 0 0 1px rgba(147,197,253,0.38)" : "none",
-                    background: isFocusedWeek ? "rgba(147,197,253,0.06)" : "transparent",
+                    boxShadow: isFocusedWeek ? "inset 0 0 0 1px rgba(34,211,238,0.5)" : "none",
+                    background: isFocusedWeek ? "rgba(34,211,238,0.08)" : "transparent",
                   }}
                 >
                   {Array.from({ length: 7 }).map((__, col) => {

@@ -10,7 +10,7 @@ export function Pill({ children, style }) {
         border: `1px solid ${THEME.line}`,
         background: THEME.panel,
         padding: "11px 13px",
-        boxShadow: "0 4px 14px rgba(16, 24, 40, 0.04)",
+        boxShadow: THEME.shadowSoft,
         ...style,
       }}
     >
@@ -20,7 +20,7 @@ export function Pill({ children, style }) {
 }
 
 export function Button({ children, onClick, style, disabled = false }) {
-  const restingShadow = style?.boxShadow || "0 4px 14px rgba(16, 24, 40, 0.04)";
+  const restingShadow = style?.boxShadow || THEME.shadowSoft;
 
   function shouldReduceMotion() {
     if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -36,7 +36,7 @@ export function Button({ children, onClick, style, disabled = false }) {
         boxSizing: "border-box",
         borderRadius: 14,
         border: `1px solid ${THEME.line}`,
-        background: THEME.panel,
+        background: THEME.panelRaised,
         color: THEME.ink,
         padding: "10px 13px",
         fontWeight: 900,
@@ -51,18 +51,18 @@ export function Button({ children, onClick, style, disabled = false }) {
         if (disabled) return;
         if (!shouldReduceMotion()) e.currentTarget.style.transform = "translateY(-1px)";
         e.currentTarget.style.boxShadow = e.currentTarget.matches(":focus-visible")
-          ? "0 0 0 3px rgba(59,130,246,0.28), 0 8px 22px rgba(16, 24, 40, 0.08)"
-          : "0 8px 22px rgba(16, 24, 40, 0.08)";
+          ? `0 0 0 3px ${THEME.focusRing}, ${THEME.shadow}`
+          : THEME.shadow;
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "translateY(0px)";
         e.currentTarget.style.boxShadow = e.currentTarget.matches(":focus-visible")
-          ? `0 0 0 3px rgba(59,130,246,0.28), ${restingShadow}`
+          ? `0 0 0 3px ${THEME.focusRing}, ${restingShadow}`
           : restingShadow;
       }}
       onFocus={(e) => {
         if (!e.currentTarget.matches(":focus-visible")) return;
-        e.currentTarget.style.boxShadow = `0 0 0 3px rgba(59,130,246,0.28), ${restingShadow}`;
+        e.currentTarget.style.boxShadow = `0 0 0 3px ${THEME.focusRing}, ${restingShadow}`;
       }}
       onBlur={(e) => {
         e.currentTarget.style.transform = "translateY(0px)";
@@ -88,8 +88,8 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
         borderRadius: 18,
         border: `1px solid ${THEME.line}`,
         background:
-          "linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(247,249,252,0.92) 100%)",
-        boxShadow: "0 8px 20px rgba(16, 24, 40, 0.06)",
+          "linear-gradient(180deg, rgba(12, 25, 21, 0.95) 0%, rgba(8, 16, 14, 0.95) 100%)",
+        boxShadow: THEME.shadow,
         overflow: "hidden",
       }}
     >
@@ -100,28 +100,28 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
             height: 54,
             borderRadius: 16,
             border: `1px solid ${THEME.line}`,
-            background: "rgba(255,255,255,0.95)",
+            background: "rgba(14, 29, 25, 0.98)",
             display: "grid",
             placeItems: "center",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.65)",
+            boxShadow: "inset 0 1px 0 rgba(142, 196, 174, 0.2)",
           }}
         >
           <svg width="34" height="34" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="2.5" y="2.5" width="23" height="23" rx="7" fill="#F7F9FC" stroke="#DFE5EE" />
+            <rect x="2.5" y="2.5" width="23" height="23" rx="7" fill="#0E1B18" stroke="#3E6A5A" />
             <path
               d="M7 17.5L11.2 12.2L14 15L17 10.5L21 17.5"
-              stroke="#121826"
+              stroke="#4ADE80"
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <path d="M9.5 20.5H18.5" stroke="#121826" strokeWidth="1.6" strokeLinecap="round" />
+            <path d="M9.5 20.5H18.5" stroke="#22D3EE" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
         </div>
         <div style={{ lineHeight: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1.2, opacity: 0.66 }}>WORKOUT</div>
+          <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1.2, color: THEME.inkMuted }}>WORKOUT</div>
           <div style={{ fontSize: 22, fontWeight: 950, marginTop: 4 }}>PYRAMID</div>
-          <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.6, marginTop: 8 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: THEME.inkMuted, marginTop: 8 }}>
             Plan. Commit. Confirm.
           </div>
         </div>
@@ -133,11 +133,11 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
             borderRadius: 999,
             padding: "6px 10px",
             border: `1px solid ${THEME.line}`,
-            background: "rgba(255,255,255,0.95)",
+            background: "rgba(14, 28, 24, 0.96)",
             fontSize: 11,
             fontWeight: 900,
             letterSpacing: 0.5,
-            opacity: 0.78,
+            color: THEME.inkMuted,
           }}
         >
           {view === "week" ? "THIS WEEK" : "MONTH VIEW"}
@@ -147,10 +147,10 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
             borderRadius: 999,
             padding: "6px 10px",
             border: `1px solid ${THEME.line}`,
-            background: "rgba(255,255,255,0.95)",
+            background: "rgba(14, 28, 24, 0.96)",
             fontSize: 12,
             fontWeight: 800,
-            opacity: 0.86,
+            color: THEME.ink,
           }}
         >
           {view === "week" ? weekRangeLabel : monthLabel}
@@ -170,7 +170,7 @@ export function ModalShell({ open, onClose, children, noCloseOnBackdrop = false 
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.35)",
+        background: "rgba(0, 5, 4, 0.72)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -184,7 +184,7 @@ export function ModalShell({ open, onClose, children, noCloseOnBackdrop = false 
           borderRadius: 22,
           background: THEME.panel,
           border: `1px solid ${THEME.line}`,
-          boxShadow: "0 20px 50px rgba(0,0,0,0.18)",
+          boxShadow: THEME.shadowStrong,
           overflow: "hidden",
         }}
       >

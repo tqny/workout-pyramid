@@ -1,5 +1,5 @@
 import React from "react";
-import { THEME } from "../app/theme";
+import { THEME, toneStyle } from "../app/theme";
 import { BrandMark, Button, Pill } from "./ui";
 
 export function HeaderCard({
@@ -12,31 +12,14 @@ export function HeaderCard({
   dashboardPrompt,
   onToggleView,
 }) {
-  const promptStyleByTone = {
-    info: {
-      background: "rgba(219,234,254,0.55)",
-      border: "1px solid rgba(37,99,235,0.18)",
-      color: "#0f172a",
-    },
-    warning: {
-      background: "rgba(254,243,199,0.70)",
-      border: "1px solid rgba(202,138,4,0.2)",
-      color: "#111827",
-    },
-    positive: {
-      background: "rgba(187,247,208,0.55)",
-      border: "1px solid rgba(16,185,129,0.2)",
-      color: "#0f172a",
-    },
-  };
-  const promptStyle = promptStyleByTone[dashboardPrompt?.tone] || promptStyleByTone.info;
+  const promptStyle = toneStyle(dashboardPrompt?.tone || "info");
 
   return (
     <div
       style={{
         borderRadius: 22,
         border: `1px solid ${THEME.line}`,
-        background: "rgba(255,255,255,0.88)",
+        background: THEME.panel,
         backdropFilter: "blur(8px)",
         padding: 18,
         display: "flex",
@@ -69,8 +52,8 @@ export function HeaderCard({
                 marginTop: 8,
                 height: 10,
                 borderRadius: 999,
-                background: "#edf1f7",
-                border: "1px solid #e6e9ef",
+                background: "rgba(11, 26, 23, 0.92)",
+                border: `1px solid ${THEME.line}`,
                 overflow: "hidden",
               }}
             >
@@ -78,7 +61,8 @@ export function HeaderCard({
                 style={{
                   height: "100%",
                   width: `${Math.min(100, (weekCompletedCount / 4) * 100)}%`,
-                  background: "#0b1220",
+                  background:
+                    "linear-gradient(90deg, rgba(34,211,238,0.95) 0%, rgba(74,222,128,0.95) 100%)",
                   borderRadius: 999,
                   transition: "width 180ms ease",
                 }}

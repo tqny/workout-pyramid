@@ -165,27 +165,27 @@ export default function App() {
 
   const dashboardPrompt = useMemo(() => {
     if (todayStatus === "completed") {
-      return { tone: "positive", text: "Today is logged. Protect the streak by planning tomorrow." };
+      return { tone: "positive", text: "Session logged. Keep the streak fed and line up tomorrow." };
     }
     if (weekCompletedCount >= 4) {
-      return { tone: "positive", text: "Weekly goal reached. Anything extra now is bonus momentum." };
+      return { tone: "positive", text: "Goal hit. Bonus reps this week are pure flex." };
     }
     if (todayStatus === "planned" && isPastPlannedTime) {
       const when = overduePlannedTimeLabel || "earlier";
       const lag = overdueDurationLabel ? ` (${overdueDurationLabel})` : "";
-      return { tone: "warning", text: `You planned for ${when}${lag}. Mark the outcome to stay honest.` };
+      return { tone: "warning", text: `You called ${when}${lag}. Time to post the result, champ.` };
     }
     if (todayStatus === "planned") {
       const when = formatClockTime(todayEntry?.time);
-      return { tone: "info", text: when ? `Today's session is set for ${when}.` : "You have a plan for today." };
+      return { tone: "info", text: when ? `Today's lift is locked for ${when}.` : "Plan is set. Go cash it in." };
     }
     if (todayStatus === "skipped") {
-      return { tone: "info", text: "Recovery is valid. Re-plan when you're ready." };
+      return { tone: "info", text: "Recovery counts. Re-rack and schedule the next one." };
     }
     if (remaining <= 1) {
-      return { tone: "warning", text: "One more workout this week will hit your goal." };
+      return { tone: "warning", text: "One more session and the weekly target is yours." };
     }
-    return { tone: "info", text: `${remaining} workouts left this week. Pick one and lock the time.` };
+    return { tone: "info", text: `${remaining} workouts left this week. Pick a slot and lock it in.` };
   }, [
     overdueDurationLabel,
     overduePlannedTimeLabel,
@@ -306,11 +306,9 @@ export default function App() {
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "radial-gradient(circle at 8% 0%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.65) 24%, rgba(238,242,247,1) 70%)",
+        background: THEME.pageGradient,
         color: THEME.ink,
-        fontFamily:
-          'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"',
+        fontFamily: THEME.font,
       }}
     >
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: 22 }}>
@@ -344,7 +342,7 @@ export default function App() {
             marginTop: 14,
             borderRadius: 22,
             border: `1px solid ${THEME.line}`,
-            background: "rgba(247,249,252,0.95)",
+            background: THEME.panelSoft,
             padding: 18,
             boxShadow: THEME.shadow,
           }}
