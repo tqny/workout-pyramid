@@ -1,0 +1,20 @@
+name: Evidence Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  evidence-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate evidence artifacts
+        run: |
+          chmod +x scripts/check-evidence.sh
+          ./scripts/check-evidence.sh

@@ -1,73 +1,86 @@
 # Workout Pyramid
 
-A focused workout commitment tracker with week/month planning, review, reminders, backup, and optional cloud sync.
+## Problem
+People who want to train consistently often fail at one step in the loop: planning, committing, or honestly logging outcomes. Most trackers capture history but do not force a simple daily commitment loop.
 
-## Core Features
+## Constraints
+- Single-developer scope with rapid iteration.
+- Free-tier infrastructure only.
+- Must work well on desktop and iPhone Safari.
+- Must support optional cloud sync while remaining usable offline/local-only.
+- Fast QA cycle required for frequent UI changes.
 
-- Week + month planning views
-- Daily commitment flow and status tracking
-- Streak + weekly goal tracking
-- Weekly review modal with next-week plan template
-- Local browser reminders (planned-time + end-of-day check)
-- Backup export/import (JSON)
-- Optional Supabase cloud sync (free-tier friendly)
-- Playwright interactive smoke tests (desktop + mobile)
+## Solution Overview
+Workout Pyramid is a focused web app that drives a weekly commitment loop:
+- plan a day/time,
+- mark completed or skipped,
+- review the week,
+- iterate next week from a template.
+
+It uses local storage by default and optional Supabase auth + cloud sync for cross-device continuity.
+
+## Architecture and Tradeoffs
+- Stack: React 19 + Vite + Supabase + Playwright.
+- Key components:
+  - local-first workout store + reminder settings
+  - Supabase-backed per-user cloud state (`user_app_state`)
+  - install-to-home-screen UX for iPhone and browser install flows
+  - admin metrics API route (server-side secrets only)
+
+Tradeoffs:
+- Local-first keeps UX resilient but requires explicit sync state management.
+- Browser notifications are platform-limited; iOS Reminder app is suggested as fallback behavior prompt.
+- Admin metrics are aggregate operational signals, not full analytics telemetry.
+
+## Implementation Notes
+1. Foundation: weekly/monthly planner, commitment modal, day editor, streak tracking.
+2. Productization: cloud sync auth, install flow, onboarding, auth recovery.
+3. Operations: admin metrics panel + evidence governance docs and CI checks.
+
+## Results and Evidence
+- Live app deployed on Vercel with multi-user auth and cross-device sync.
+- E2E smoke suite (desktop + mobile) maintained and passing.
+- Admin metrics panel provides active/signed-in/auth-risk snapshots.
+
+Evidence artifacts:
+- Standard: `docs/EVIDENCE_STANDARD.md`
+- Changelog: `CHANGELOG.md`
+- ADRs: `docs/adr/`
+- Demo logs: `docs/demos/`
+- Weekly metrics snapshots: `docs/metrics/`
+
+## Live Demo / Repo Links
+- Live: https://workout-pyramid.vercel.app
+- Repository: https://github.com/tqny/workout-pyramid
+- Supabase setup guide: `SUPABASE_SETUP.md`
 
 ## Local Development
-
 ```bash
 npm install
 npm run dev
 ```
 
 ## Quality Checks
-
 ```bash
+./scripts/check-evidence.sh
 npm run lint
-npm run build
 npm run test:e2e
+npm run build
 ```
 
 ## Cloud Sync (Optional)
-
-Cloud sync is disabled by default.
-
-1. Configure env vars in `.env.local`:
-
+Set in `.env.local`:
 ```bash
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
 ```
-
-2. Follow table/policy setup in `SUPABASE_SETUP.md`.
-
-3. Restart dev server and use `Cloud setup` / `Cloud sign in` in the app.
-
-## Reminder Behavior
-
-Reminders use browser notifications and require permission.
-Notifications are scheduled while the app is open in a browser session.
-
-## Test Artifacts
-
-Playwright/browser artifacts are ignored by git:
-- `.playwright-browsers`
-- `playwright-report`
-- `test-results`
+Then follow `SUPABASE_SETUP.md`.
 
 ## Admin Metrics (Optional)
+Set server env vars in Vercel:
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `ADMIN_METRICS_KEY`
 
-An admin-only metrics modal is available for account and sync monitoring.
-
-1. Set server-side env vars in Vercel:
-   - `SUPABASE_URL` = your Supabase project URL
-   - `SUPABASE_SERVICE_ROLE_KEY` = Supabase service role key (secret)
-   - `ADMIN_METRICS_KEY` = your own admin passphrase
-2. Open the app with `?admin=1`:
-   - `https://workout-pyramid.vercel.app/?admin=1`
-3. Click `Admin metrics` and enter your admin passphrase.
-
-Security:
-
-- Keep `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_METRICS_KEY` secret.
-- The metrics endpoint runs server-side and requires `x-admin-metrics-key`.
+Open with `?admin=1`:
+- `https://workout-pyramid.vercel.app/?admin=1`
