@@ -264,7 +264,15 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
     if (!isConfigured) return false;
     setStatus("auth");
     setError("");
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+    const emailRedirectTo =
+      typeof window !== "undefined" && window.location?.origin
+        ? window.location.origin
+        : undefined;
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo },
+    });
     if (signUpError) {
       setStatus("error");
       setError(signUpError.message || "Sign up failed.");
