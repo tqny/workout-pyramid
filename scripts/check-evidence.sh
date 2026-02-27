@@ -16,6 +16,9 @@ required_files=(
   ".github/ISSUE_TEMPLATE/bug_report.md"
   ".github/ISSUE_TEMPLATE/feature_request.md"
   ".github/ISSUE_TEMPLATE/config.yml"
+  ".github/workflows/evidence-check.yml"
+  ".github/workflows/ci.yml"
+  "scripts/check-evidence.sh"
 )
 
 for file in "${required_files[@]}"; do
@@ -25,12 +28,12 @@ for file in "${required_files[@]}"; do
   fi
 done
 
-if ! rg -q "\[Unreleased\]" CHANGELOG.md; then
+if ! grep -q "\[Unreleased\]" CHANGELOG.md; then
   echo "CHANGELOG.md must contain an [Unreleased] section"
   exit 1
 fi
 
-if ! rg -q "Recorded retrospectively on 2026-02-27" docs/adr docs/demos docs/metrics CHANGELOG.md; then
+if ! grep -Rqs -- "Recorded retrospectively on 2026-02-27" docs/adr docs/demos docs/metrics CHANGELOG.md; then
   echo "Retroactive records note not found in backfill artifacts"
   exit 1
 fi
