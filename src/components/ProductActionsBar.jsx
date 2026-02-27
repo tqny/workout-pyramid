@@ -12,6 +12,21 @@ export function ProductActionsBar({
   onOpenReview,
   notice,
 }) {
+  const actionStyleByTone = {
+    positive: {
+      background: "rgba(187,247,208,0.65)",
+      border: "1px solid rgba(16,185,129,0.25)",
+    },
+    warning: {
+      background: "rgba(254,243,199,0.70)",
+      border: "1px solid rgba(202,138,4,0.2)",
+    },
+    info: {
+      background: "rgba(235,244,255,0.92)",
+      border: "1px solid rgba(37,99,235,0.22)",
+    },
+  };
+
   const noticeStyleByTone = {
     positive: {
       background: "rgba(187,247,208,0.55)",
@@ -40,18 +55,7 @@ export function ProductActionsBar({
           onClick={onOpenCloudSync}
           style={{
             flex: "1 1 160px",
-            background:
-              cloudSyncTone === "positive"
-                ? "rgba(187,247,208,0.65)"
-                : cloudSyncTone === "warning"
-                  ? "rgba(254,243,199,0.70)"
-                  : undefined,
-            border:
-              cloudSyncTone === "positive"
-                ? "1px solid rgba(16,185,129,0.25)"
-                : cloudSyncTone === "warning"
-                  ? "1px solid rgba(202,138,4,0.2)"
-                  : undefined,
+            ...(actionStyleByTone[cloudSyncTone] || actionStyleByTone.info),
           }}
         >
           {cloudSyncLabel}
@@ -61,18 +65,7 @@ export function ProductActionsBar({
           disabled={disableInstall}
           style={{
             flex: "1 1 160px",
-            background:
-              installTone === "positive"
-                ? "rgba(187,247,208,0.65)"
-                : installTone === "warning"
-                  ? "rgba(254,243,199,0.70)"
-                  : undefined,
-            border:
-              installTone === "positive"
-                ? "1px solid rgba(16,185,129,0.25)"
-                : installTone === "warning"
-                  ? "1px solid rgba(202,138,4,0.2)"
-                  : undefined,
+            ...(actionStyleByTone[installTone] || actionStyleByTone.info),
           }}
         >
           {installLabel}
