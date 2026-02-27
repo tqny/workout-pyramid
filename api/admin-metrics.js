@@ -19,6 +19,28 @@ function getAdminClient() {
   });
 }
 
+function isAfter(iso, thresholdIso) {
+  if (!iso) return false;
+  return new Date(iso).getTime() >= new Date(thresholdIso).getTime();
+}
+
+async function listAllUsers(supabase) {
+  const users = [];
+  const perPage = 1000;
+  let page = 1;
+
+  while (page <= 20) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+    const batch = data?.users || [];
+    users.push(...batch);
+    if (batch.length < perPage) break;
+    page += 1;
+  }
+
+  return users;
+}
+
 async function getCount(builderPromise) {
   const { count, error } = await builderPromise;
   if (error) throw error;
@@ -45,30 +67,29 @@ export default async function handler(req, res) {
     const now = new Date();
     const since24h = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
     const since7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const users = await listAllUsers(supabase);
 
-    const users = supabase.schema("auth").from("users");
+    let signedIn24h = 0;
+    let signedIn7d = 0;
+    let created24h = 0;
+    let neverSignedIn = 0;
+    let unverifiedOlderThan24h = 0;
 
-    const [
-      totalUsers,
-      signedIn24h,
-      signedIn7d,
-      created24h,
-      neverSignedIn,
-      unverifiedOlderThan24h,
-      activeSync24h,
-      activeSync7d,
-    ] = await Promise.all([
-      getCount(users.select("id", { head: true, count: "exact" })),
-      getCount(users.select("id", { head: true, count: "exact" }).gte("last_sign_in_at", since24h)),
-      getCount(users.select("id", { head: true, count: "exact" }).gte("last_sign_in_at", since7d)),
-      getCount(users.select("id", { head: true, count: "exact" }).gte("created_at", since24h)),
-      getCount(users.select("id", { head: true, count: "exact" }).is("last_sign_in_at", null)),
-      getCount(
-        users
-          .select("id", { head: true, count: "exact" })
-          .is("email_confirmed_at", null)
-          .lt("created_at", since24h)
-      ),
+    for (const user of users) {
+      const createdAt = user?.created_at || null;
+      const lastSignInAt = user?.last_sign_in_at || null;
+      const emailConfirmedAt = user?.email_confirmed_at || null;
+
+      if (isAfter(lastSignInAt, since24h)) signedIn24h += 1;
+      if (isAfter(lastSignInAt, since7d)) signedIn7d += 1;
+      if (isAfter(createdAt, since24h)) created24h += 1;
+      if (!lastSignInAt) neverSignedIn += 1;
+      if (!emailConfirmedAt && createdAt && !isAfter(createdAt, since24h)) {
+        unverifiedOlderThan24h += 1;
+      }
+    }
+
+    const [activeSync24h, activeSync7d] = await Promise.all([
       getCount(
         supabase
           .from("user_app_state")
@@ -90,7 +111,7 @@ export default async function handler(req, res) {
         since7d,
       },
       metrics: {
-        totalUsers,
+        totalUsers: users.length,
         signedIn24h,
         signedIn7d,
         created24h,
