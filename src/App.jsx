@@ -16,6 +16,7 @@ import { CommitmentModal } from "./components/CommitmentModal";
 import { CloudSyncModal } from "./components/CloudSyncModal";
 import { DayEditorModal } from "./components/DayEditorModal";
 import { HeaderCard } from "./components/HeaderCard";
+import { InstallAppModal } from "./components/InstallAppModal";
 import { MonthView } from "./components/MonthView";
 import { ProductActionsBar } from "./components/ProductActionsBar";
 import { WeekView } from "./components/WeekView";
@@ -23,6 +24,7 @@ import { WeeklyReviewModal } from "./components/WeeklyReviewModal";
 import { useCommitmentFlow } from "./hooks/useCommitmentFlow";
 import { useCloudSync } from "./hooks/useCloudSync";
 import { useDayEditor } from "./hooks/useDayEditor";
+import { useInstallPrompt } from "./hooks/useInstallPrompt";
 import { useReminders } from "./hooks/useReminders";
 import { useViewportWidth } from "./hooks/useViewportWidth";
 import { useWorkoutStore } from "./hooks/useWorkoutStore";
@@ -36,6 +38,7 @@ export default function App() {
 
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
   const [notice, setNotice] = useState(null);
   const [templateDays, setTemplateDays] = useState([0, 2, 4, 5]);
   const [templateTime, setTemplateTime] = useState("18:00");
@@ -142,6 +145,7 @@ export default function App() {
     replaceReminderSettings: reminders.replaceSettings,
     onNotice: setNotice,
   });
+  const installPrompt = useInstallPrompt();
 
   const isPhone = viewportWidth < 640;
   const isCompactMonthGrid = viewportWidth < 760;
@@ -196,6 +200,12 @@ export default function App() {
     : cloudSync.user
       ? "positive"
       : "info";
+  const installLabel = installPrompt.isStandalone
+    ? "Installed"
+    : installPrompt.isIOS
+      ? "Add to Home Screen"
+      : "Install app";
+  const installTone = installPrompt.isStandalone ? "positive" : "info";
 
   function openDayEditor(iso) {
     dayEditor.openDayEditor(iso);
@@ -294,6 +304,10 @@ export default function App() {
           cloudSyncLabel={cloudSyncLabel}
           cloudSyncTone={cloudSyncTone}
           onOpenCloudSync={() => setShowCloudSyncModal(true)}
+          installLabel={installLabel}
+          installTone={installTone}
+          onOpenInstall={() => setShowInstallModal(true)}
+          disableInstall={installPrompt.isStandalone}
           onOpenReview={() => setShowReviewModal(true)}
           notice={notice}
         />
@@ -370,6 +384,23 @@ export default function App() {
         open={showCloudSyncModal}
         onClose={() => setShowCloudSyncModal(false)}
         cloudSync={cloudSync}
+      />
+
+      <InstallAppModal
+        open={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+        isIOS={installPrompt.isIOS}
+        isStandalone={installPrompt.isStandalone}
+        canNativeInstallPrompt={installPrompt.canNativeInstallPrompt}
+        onPromptInstall={async () => {
+          const result = await installPrompt.promptInstall();
+          if (result.didPrompt && result.accepted) {
+            setNotice({ tone: "positive", text: "Install accepted. Launch from your home screen." });
+          } else if (result.didPrompt) {
+            setNotice({ tone: "info", text: "Install prompt dismissed. You can try again anytime." });
+          }
+          setShowInstallModal(false);
+        }}
       />
 
       <WeeklyReviewModal

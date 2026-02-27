@@ -5,6 +5,10 @@ export function ProductActionsBar({
   cloudSyncLabel,
   cloudSyncTone = "info",
   onOpenCloudSync,
+  installLabel = "Install app",
+  installTone = "info",
+  onOpenInstall,
+  disableInstall = false,
   onOpenReview,
   notice,
 }) {
@@ -51,6 +55,27 @@ export function ProductActionsBar({
           }}
         >
           {cloudSyncLabel}
+        </Button>
+        <Button
+          onClick={onOpenInstall}
+          disabled={disableInstall}
+          style={{
+            flex: "1 1 160px",
+            background:
+              installTone === "positive"
+                ? "rgba(187,247,208,0.65)"
+                : installTone === "warning"
+                  ? "rgba(254,243,199,0.70)"
+                  : undefined,
+            border:
+              installTone === "positive"
+                ? "1px solid rgba(16,185,129,0.25)"
+                : installTone === "warning"
+                  ? "1px solid rgba(202,138,4,0.2)"
+                  : undefined,
+          }}
+        >
+          {installLabel}
         </Button>
       </div>
 

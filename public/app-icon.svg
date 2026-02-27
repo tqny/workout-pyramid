@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Workout Pyramid icon">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+    <linearGradient id="peak" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="url(#bg)" />
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="none" stroke="#cbd5e1" stroke-width="16" />
+  <path d="M106 334L188 240L254 306L322 200L406 334" fill="none" stroke="url(#peak)" stroke-linecap="round" stroke-linejoin="round" stroke-width="34" />
+  <path d="M152 388H360" fill="none" stroke="#0f172a" stroke-linecap="round" stroke-width="26" />
+</svg>
