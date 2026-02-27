@@ -1,0 +1,838 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+
+const STORAGE_KEY = "workout_pyramid_store_v1";
+const COMMIT_KEY = "workout_pyramid_last_commit_check";
+
+// ------------------------
+// Date helpers
+// ------------------------
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function toISODate(d) {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+function startOfWeekMonday(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay(); // 0=Sun..6=Sat
+  const diff = (day + 6) % 7; // Mon=0..Sun=6
+  d.setDate(d.getDate() - diff);
+  return d;
+}
+
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+function startOfMonth(date) {
+  const d = new Date(date);
+  d.setDate(1);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function addMonths(date, n) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + n);
+  return d;
+}
+
+function startOfCalendarGridMonday(monthAnchor) {
+  // monthAnchor is any date in target month (we use "monthAnchor" = addMonths(now, offset))
+  const first = startOfMonth(monthAnchor);
+  return startOfWeekMonday(first);
+}
+
+function formatRange(monday) {
+  const sunday = addDays(monday, 6);
+  const opts = { month: "short", day: "numeric" };
+  const a = monday.toLocaleDateString(undefined, opts);
+  const b = sunday.toLocaleDateString(undefined, opts);
+  return `${a} – ${b}`;
+}
+
+function isSameWeekMonday(aISO, bISO) {
+  const a = startOfWeekMonday(new Date(aISO + "T00:00:00"));
+  const b = startOfWeekMonday(new Date(bISO + "T00:00:00"));
+  return toISODate(a) === toISODate(b);
+}
+
+// ------------------------
+// Store helpers
+// ------------------------
+function loadStore() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { days: {} };
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return { days: {} };
+    if (!parsed.days || typeof parsed.days !== "object") return { days: {} };
+    return parsed;
+  } catch {
+    return { days: {} };
+  }
+}
+
+function saveStore(store) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  } catch {
+    // ignore
+  }
+}
+
+function getLastCommitCheck() {
+  try { return localStorage.getItem(COMMIT_KEY) || ""; } catch { return ""; }
+}
+function setLastCommitCheck(iso) {
+  try { localStorage.setItem(COMMIT_KEY, iso); } catch {}
+}
+function statusFromEntry(entry) {
+  if (!entry) return "empty";
+  return entry.status || "empty";
+}
+
+function statusStyle(status) {
+  // Monday.com-inspired but soft
+  if (status === "completed") {
+    return { background: "rgba(187, 247, 208, 0.65)", border: "1px solid rgba(16,185,129,0.18)" };
+  }
+  if (status === "planned") {
+    return { background: "rgba(254, 215, 170, 0.55)", border: "1px solid rgba(249,115,22,0.18)" };
+  }
+  if (status === "skipped") {
+    return { background: "rgba(254, 202, 202, 0.60)", border: "1px solid rgba(239,68,68,0.18)" };
+  }
+  // empty
+  return { background: "#ffffff", border: "1px solid #e6e9ef" };
+}
+
+// ------------------------
+// UI helpers
+// ------------------------
+function Pill({ children, style }) {
+  return (
+    <div
+      style={{
+        borderRadius: 16,
+        border: "1px solid #e6e9ef",
+        background: "#ffffff",
+        padding: "10px 12px",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Button({ children, onClick, style }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        borderRadius: 14,
+        border: "1px solid #e6e9ef",
+        background: "#ffffff",
+        padding: "10px 12px",
+        fontWeight: 900,
+        cursor: "pointer",
+        ...style,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ModalShell({ open, onClose, children }) {
+  if (!open) return null;
+  return (
+    <div
+      onMouseDown={(e) => {
+        // click outside closes
+        if (e.target === e.currentTarget) onClose();
+      }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.35)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 18,
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          width: "min(520px, 100%)",
+          borderRadius: 22,
+          background: "#ffffff",
+          border: "1px solid #e6e9ef",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.18)",
+          overflow: "hidden",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ------------------------
+// App
+// ------------------------
+export default function App() {
+  const [view, setView] = useState("week"); // "week" | "month"
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [monthOffset, setMonthOffset] = useState(0);
+  const [store, setStore] = useState(() => loadStore());
+
+  const todayISO = toISODate(new Date());
+  const [monthFocusISO, setMonthFocusISO] = useState(todayISO);
+
+  // modal state
+  const [activeISO, setActiveISO] = useState(null);
+  const activeEntry = activeISO ? store.days[activeISO] : null;
+
+  // Persist store
+  useEffect(() => {
+    saveStore(store);
+  }, [store]);
+
+  // Week anchor: if month view and user clicked a date, week should align to that
+  const monday = useMemo(() => {
+    if (view === "week") {
+      const base = startOfWeekMonday(new Date());
+      return addDays(base, weekOffset * 7);
+    }
+    // month view: week aligns to focused ISO
+    const base = startOfWeekMonday(new Date(monthFocusISO + "T00:00:00"));
+    return base;
+  }, [view, weekOffset, monthFocusISO]);
+
+  const daysMonToSun = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(monday, i)), [monday]);
+  const [mon, tue, wed, thu, fri, sat, sun] = daysMonToSun;
+
+  // Month grid anchor
+  const monthAnchor = useMemo(() => addMonths(new Date(), monthOffset), [monthOffset]);
+  const monthGridStart = useMemo(() => startOfCalendarGridMonday(monthAnchor), [monthAnchor]);
+  const monthLabel = useMemo(
+    () => monthAnchor.toLocaleDateString(undefined, { month: "long", year: "numeric" }),
+    [monthAnchor]
+  );
+
+  const prevMonth = useMemo(() => addMonths(monthAnchor, -1), [monthAnchor]);
+  const nextMonth = useMemo(() => addMonths(monthAnchor, 1), [monthAnchor]);
+  const prevMonthLabel = useMemo(() => prevMonth.toLocaleDateString(undefined, { month: "short" }), [prevMonth]);
+  const nextMonthLabel = useMemo(() => nextMonth.toLocaleDateString(undefined, { month: "short" }), [nextMonth]);
+
+  // Weekly completion counts (goal = 4)
+  const weekCompletedCount = useMemo(() => {
+    let c = 0;
+    for (const d of daysMonToSun) {
+      const iso = toISODate(d);
+      const entry = store.days[iso];
+      if (entry && entry.status === "completed") c += 1;
+    }
+    return c;
+  }, [daysMonToSun, store.days]);
+
+  const remaining = Math.max(0, 4 - weekCompletedCount);
+
+  // If monthFocusISO changes in month view, update the week pill/labels automatically (done via monday memo)
+
+  // --- Month click logic: single click sets focus (and thus week), double click opens modal
+  const clickTimerRef = useRef(null);
+
+  function handleMonthCellClick(iso) {
+    // single click: focus only
+    setMonthFocusISO(iso);
+    // do not open modal on single click
+  }
+
+  function handleMonthCellDoubleClick(iso) {
+    // double click: open modal
+    setMonthFocusISO(iso);
+    setActiveISO(iso);
+  }
+
+  // Helpers to mutate store
+  function upsertEntry(iso, patch) {
+    setStore((prev) => {
+      const cur = prev.days[iso] || {};
+      const next = {
+        ...prev,
+        days: {
+          ...prev.days,
+          [iso]: { ...cur, ...patch },
+        },
+      };
+      return next;
+    });
+  }
+
+  function closeModal() {
+    setActiveISO(null);
+  }
+
+  // Modal local draft state
+  const [draftStatus, setDraftStatus] = useState("planned");
+  const [draftTime, setDraftTime] = useState("");
+  const [draftFocus, setDraftFocus] = useState("");
+
+  useEffect(() => {
+    if (!activeISO) return;
+    const e = store.days[activeISO] || null;
+    setDraftStatus(e?.status || "planned");
+    setDraftTime(e?.time || "");
+    setDraftFocus(e?.focus || "");
+  }, [activeISO, store.days]);
+
+  function saveModal() {
+    if (!activeISO) return;
+    upsertEntry(activeISO, {
+      status: draftStatus,
+      time: draftTime.trim(),
+      focus: draftFocus.trim(),
+    });
+    closeModal();
+  }
+
+  // ------------------------
+  // Components
+  // ------------------------
+  function WeekDayTile({ dateObj }) {
+    const iso = toISODate(dateObj);
+    const entry = store.days[iso];
+    const status = statusFromEntry(entry);
+    const isToday = iso === todayISO;
+    const isSunday = dateObj.getDay() === 0;
+
+    const dow = dateObj.toLocaleDateString(undefined, { weekday: "short" });
+    const md = dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+    return (
+      <button
+        onClick={() => setActiveISO(iso)}
+        style={{
+          ...statusStyle(status),
+          borderRadius: 16,
+          padding: 14,
+          position: "relative",
+          textAlign: "left",
+          minHeight: 110,
+          cursor: "pointer",
+          width: "100%",
+          transition: "transform 120ms ease, box-shadow 120ms ease",
+          boxShadow: isToday
+            ? "0 0 0 2px rgba(17,24,39,0.65), 0 10px 22px rgba(17,24,39,0.10)"
+            : "0 10px 22px rgba(17,24,39,0.10)",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-1px)")}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div style={{ fontSize: 13, opacity: 0.75, fontWeight: 700 }}>{dow}</div>
+          <div style={{ fontSize: 13, fontWeight: 900 }}>{md}</div>
+        </div>
+
+        <div style={{ marginTop: 10, fontSize: 15, fontWeight: 950 }}>
+          {status === "completed" && "Completed"}
+          {status === "planned" && "Planned"}
+          {status === "skipped" && "Skipped"}
+          {status === "empty" && "No entry"}
+        </div>
+
+        <div style={{ marginTop: 6, fontSize: 12, opacity: 0.75 }}>
+          {entry?.time ? `${entry.time}` : ""}
+          {entry?.time && entry?.focus ? " • " : ""}
+          {entry?.focus ? `${entry.focus}` : ""}
+          {!entry?.time && !entry?.focus ? "(tap to log)" : ""}
+        </div>
+
+        {/* Sunday cross (always present, medium sized) */}
+        {isSunday && (
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "none",
+              fontSize: 34,
+              color: "rgba(17,24,39,0.45)",
+              fontWeight: 800,
+            }}
+          >
+            ✝
+          </div>
+        )}
+
+        {isToday && (
+          <div
+            style={{
+              position: "absolute",
+              left: 12,
+              top: 44,
+              padding: "3px 8px",
+              borderRadius: 999,
+              background: "rgba(147,197,253,0.55)",
+              color: "#0b1220",
+              fontSize: 11,
+              fontWeight: 900,
+            }}
+          >
+            TODAY
+          </div>
+        )}
+      </button>
+    );
+  }
+
+  function MonthCell({ dateObj, inMonth, isSundayCol }) {
+    const iso = toISODate(dateObj);
+    const entry = store.days[iso];
+    const status = statusFromEntry(entry);
+    const isToday = iso === todayISO;
+    const isSelected = iso === monthFocusISO;
+
+    const dayNum = dateObj.getDate();
+
+    // month click logic (single vs double)
+    function onClick() {
+      // single click
+      if (clickTimerRef.current) {
+        // already clicked once; let dblclick handler handle
+        return;
+      }
+      clickTimerRef.current = setTimeout(() => {
+        clickTimerRef.current = null;
+        handleMonthCellClick(iso);
+      }, 220);
+    }
+
+    function onDoubleClick() {
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = null;
+      }
+      handleMonthCellDoubleClick(iso);
+    }
+
+    return (
+      <button
+        onClick={onClick}
+        onDoubleClick={onDoubleClick}
+        style={{
+          ...statusStyle(status),
+          borderRadius: 14,
+          padding: 10,
+          position: "relative",
+          textAlign: "left",
+          minHeight: 86,
+          cursor: "pointer",
+          width: "100%",
+          opacity: inMonth ? 1 : 0.55,
+          boxShadow: isToday
+            ? "0 0 0 2px rgba(17,24,39,0.65), 0 10px 22px rgba(17,24,39,0.12)"
+            : "0 10px 22px rgba(17,24,39,0.10)",
+          outline: isSelected ? "2px solid rgba(17,24,39,0.80)" : "none",
+          transition: "transform 120ms ease, box-shadow 120ms ease",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-1px)")}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div style={{ fontSize: 12, fontWeight: 950 }}>{dayNum}</div>
+          {isToday && (
+            <div
+              style={{
+                padding: "2px 8px",
+                borderRadius: 999,
+                background: "rgba(147,197,253,0.55)",
+                fontSize: 11,
+                fontWeight: 900,
+              }}
+            >
+              Today
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginTop: 6, fontSize: 12, opacity: 0.75 }}>
+          {entry?.status === "completed" ? "Completed" : "Log"}
+        </div>
+
+        {/* Sunday cross in month view (subtle, optional) */}
+        {isSundayCol && (
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              right: 10,
+              top: 10,
+              fontSize: 18,
+              color: "rgba(17,24,39,0.22)",
+              fontWeight: 800,
+              pointerEvents: "none",
+            }}
+          >
+            ✝
+          </div>
+        )}
+      </button>
+    );
+  }
+
+  // ------------------------
+  // Layout
+  // ------------------------
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f3f6fb",
+        color: "#0b1220",
+        fontFamily:
+          'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"',
+      }}
+    >
+      <div style={{ maxWidth: 980, margin: "0 auto", padding: 22 }}>
+        {/* Header */}
+        <div
+          style={{
+            borderRadius: 22,
+            border: "1px solid #e6e9ef",
+            background: "#ffffff",
+            padding: 18,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 14,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 950 }}>
+              {view === "week" ? "This Week" : monthLabel}
+            </div>
+            {view === "week" && (
+              <div style={{ fontSize: 13, opacity: 0.7 }}>
+                {`${formatRange(monday)} (week starts Monday)`}
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Weekly goal pill */}
+            <Pill style={{ minWidth: 280 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                <div style={{ fontWeight: 900 }}>Completed: {weekCompletedCount}/4</div>
+                <div style={{ opacity: 0.7 }}>Remaining: {remaining}</div>
+              </div>
+              <div
+                style={{
+                  marginTop: 8,
+                  height: 10,
+                  borderRadius: 999,
+                  background: "#edf1f7",
+                  border: "1px solid #e6e9ef",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${Math.min(100, (weekCompletedCount / 4) * 100)}%`,
+                    background: "#0b1220",
+                    borderRadius: 999,
+                    transition: "width 180ms ease",
+                  }}
+                />
+              </div>
+            </Pill>
+
+            <Button onClick={() => setView(view === "week" ? "month" : "week")} style={{ minWidth: 92 }}>
+              {view === "week" ? "Month" : "Week"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Body card */}
+        <div
+          style={{
+            marginTop: 14,
+            borderRadius: 22,
+            border: "1px solid #e6e9ef",
+            background: "#eef3f8",
+            padding: 18,
+          }}
+        >
+          {view === "week" ? (
+            <>
+              {/* Week pyramid */}
+              <div style={{ marginTop: 6 }}>
+                {/* Sunday on top (pyramid point) */}
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <div style={{ width: "min(420px, 100%)" }}>
+                    <WeekDayTile dateObj={sun} />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                  <WeekDayTile dateObj={mon} />
+                  <WeekDayTile dateObj={tue} />
+                  <WeekDayTile dateObj={wed} />
+                </div>
+
+                <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                  <WeekDayTile dateObj={thu} />
+                  <WeekDayTile dateObj={fri} />
+                  <WeekDayTile dateObj={sat} />
+                </div>
+              </div>
+
+              {/* Week nav */}
+              <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Button
+                  onClick={() => {
+                    setWeekOffset((v) => v - 1);
+                  }}
+                  style={{ minWidth: 140 }}
+                >
+                  ◀ Prev week
+                </Button>
+
+                <Button
+                  onClick={() => {
+                    setWeekOffset(0);
+                  }}
+                  style={{ minWidth: 120, fontWeight: 950 }}
+                >
+                  Today
+                </Button>
+
+                <Button
+                  onClick={() => {
+                    setWeekOffset((v) => v + 1);
+                  }}
+                  style={{ minWidth: 140 }}
+                >
+                  Next week ▶
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Month nav (two buttons, abbreviated month names) */}
+              <div style={{ marginTop: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Button onClick={() => setMonthOffset((v) => v - 1)}>◀ {prevMonthLabel}</Button>
+                <Button onClick={() => setMonthOffset((v) => v + 1)}>{nextMonthLabel} ▶</Button>
+              </div>
+
+              {/* Weekday labels */}
+              <div
+                style={{
+                  marginTop: 14,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(7, 1fr)",
+                  gap: 10,
+                  padding: "0 8px",
+                  color: "rgba(11,18,32,0.60)",
+                  fontSize: 12,
+                  fontWeight: 800,
+                }}
+              >
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((x) => (
+                  <div key={x} style={{ textAlign: "left" }}>
+                    {x}
+                  </div>
+                ))}
+              </div>
+
+              {/* Month grid with week-row halo */}
+              <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
+                {Array.from({ length: 6 }).map((_, row) => {
+                  const rowStart = addDays(monthGridStart, row * 7);
+                  const rowISO = toISODate(rowStart);
+
+                  const focusDate = monthFocusISO ? new Date(monthFocusISO + "T00:00:00") : null;
+                  const focusInThisMonth = focusDate ? focusDate.getMonth() === monthAnchor.getMonth() : false;
+
+                  const isFocusedWeek =
+                    view === "month" &&
+                    monthFocusISO &&
+                    focusInThisMonth &&
+                    isSameWeekMonday(monthFocusISO, rowISO);
+
+                  return (
+                    <div
+                      key={row}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(7, 1fr)",
+                        gap: 10,
+                        padding: 8,
+                        borderRadius: 18,
+                        transition: "box-shadow 160ms ease, background 160ms ease",
+                        boxShadow: isFocusedWeek ? "0 0 0 4px rgba(147,197,253,0.55)" : "none",
+                        background: isFocusedWeek ? "rgba(147,197,253,0.18)" : "transparent",
+                      }}
+                    >
+                      {Array.from({ length: 7 }).map((__, col) => {
+                        const d = addDays(rowStart, col);
+                        const inMonth = d.getMonth() === monthAnchor.getMonth();
+                        const isSundayCol = col === 6;
+
+                        return (
+                          <MonthCell
+                            key={toISODate(d)}
+                            dateObj={d}
+                            inMonth={inMonth}
+                            isSundayCol={isSundayCol}
+                          />
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ marginTop: 12, fontSize: 12, opacity: 0.65 }}>
+                Tip: Click a day to focus its week. Double-click to edit.
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Modal editor */}
+      <ModalShell open={!!activeISO} onClose={closeModal}>
+        <div style={{ padding: 16, borderBottom: "1px solid #e6e9ef", display: "flex", justifyContent: "space-between" }}>
+          <div style={{ fontSize: 16, fontWeight: 950 }}>
+            {activeISO ? new Date(activeISO + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) : ""}
+          </div>
+          <button
+            onClick={closeModal}
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 12,
+              border: "1px solid #e6e9ef",
+              background: "#ffffff",
+              cursor: "pointer",
+              fontWeight: 900,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div style={{ padding: 16 }}>
+          <div style={{ display: "flex", gap: 10 }}>
+            <Button
+              onClick={() => setDraftStatus("planned")}
+              style={{
+                flex: 1,
+                background: draftStatus === "planned" ? "rgba(254,215,170,0.55)" : "#fff",
+              }}
+            >
+              Planned
+            </Button>
+            <Button
+              onClick={() => setDraftStatus("completed")}
+              style={{
+                flex: 1,
+                background: draftStatus === "completed" ? "rgba(187,247,208,0.65)" : "#fff",
+              }}
+            >
+              Completed
+            </Button>
+            <Button
+              onClick={() => setDraftStatus("skipped")}
+              style={{
+                flex: 1,
+                background: draftStatus === "skipped" ? "rgba(254,202,202,0.60)" : "#fff",
+              }}
+            >
+              Skipped
+            </Button>
+          </div>
+
+          <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>Time</div>
+              <input
+                value={draftTime}
+                onChange={(e) => setDraftTime(e.target.value)}
+                placeholder="e.g., 17:15"
+                style={{
+                  width: "100%",
+                  borderRadius: 14,
+                  border: "1px solid #e6e9ef",
+                  padding: "10px 12px",
+                  fontSize: 14,
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>What did you work on?</div>
+              <input
+                value={draftFocus}
+                onChange={(e) => setDraftFocus(e.target.value)}
+                placeholder="e.g., Chest + walk"
+                style={{
+                  width: "100%",
+                  borderRadius: 14,
+                  border: "1px solid #e6e9ef",
+                  padding: "10px 12px",
+                  fontSize: 14,
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+              <Button
+                onClick={() => {
+                  // "No entry" = remove entry
+                  if (!activeISO) return;
+                  setStore((prev) => {
+                    const nextDays = { ...prev.days };
+                    delete nextDays[activeISO];
+                    return { ...prev, days: nextDays };
+                  });
+                  closeModal();
+                }}
+                style={{ flex: 1, opacity: 0.85 }}
+              >
+                Clear entry
+              </Button>
+
+              <Button
+                onClick={saveModal}
+                style={{
+                  flex: 2,
+                  border: "1px solid rgba(17,24,39,0.25)",
+                  boxShadow: "0 10px 22px rgba(17,24,39,0.10)",
+                }}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      </ModalShell>
+    </div>
+  );
+}
