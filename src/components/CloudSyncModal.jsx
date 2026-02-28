@@ -9,7 +9,7 @@ function statusLabel(status) {
   return "Ready";
 }
 
-export function CloudSyncModal({ open, onClose, cloudSync }) {
+export function CloudSyncModal({ open, onClose, cloudSync, showAdminMetricsAction = false, onOpenAdminMetrics }) {
   const {
     isConfigured,
     user,
@@ -33,18 +33,50 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
     updateRecoveredPassword,
     signOut,
     syncNow,
+    pullLatest,
   } = cloudSync;
 
   const recoveryMode = authMode === "reset";
   const signedIn = !!user && !recoveryMode;
+  const isSyncing = status === "syncing";
+  const isAuthenticating = status === "auth";
+  const isErrored = status === "error";
+  const isPhoneViewport =
+    typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(max-width: 760px)").matches
+      : false;
+  const statusTone = isErrored
+    ? {
+        background: "rgba(254,202,202,0.55)",
+        border: "1px solid rgba(239,68,68,0.28)",
+        color: "#7f1d1d",
+      }
+    : isSyncing || isAuthenticating
+      ? {
+          background: "rgba(219,234,254,0.52)",
+          border: "1px solid rgba(37,99,235,0.24)",
+          color: isPhoneViewport ? "#111827" : "#1d4ed8",
+        }
+      : {
+          background: "rgba(240,253,250,0.7)",
+          border: "1px solid rgba(16,185,129,0.2)",
+          color: "#065f46",
+        };
+  const statusDetail = isSyncing
+    ? "Sync in progress. Keep this window open."
+    : isAuthenticating
+      ? "Authenticating account request."
+      : isErrored
+        ? "Action needed before sync can continue."
+        : "Everything is ready.";
   const authLinkStyle = {
     border: "none",
     background: "transparent",
     padding: 0,
     margin: 0,
-    color: "#1d4ed8",
+    color: isPhoneViewport ? "#111827" : "#1d4ed8",
     fontSize: 12,
-    fontWeight: 800,
+    fontWeight: 600,
     cursor: "pointer",
     textAlign: "left",
   };
@@ -60,10 +92,10 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
   };
 
   return (
-    <ModalShell open={open} onClose={onClose}>
+    <ModalShell open={open} onClose={onClose} ariaLabel="Cloud sync">
       <div style={{ padding: 18, borderBottom: "1px solid #e6e9ef", display: "flex", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 950 }}>Cloud sync</div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>Cloud sync</div>
           <div style={{ fontSize: 12, opacity: 0.68, marginTop: 2 }}>
             Sync workouts and reminder settings across browsers and devices.
           </div>
@@ -79,7 +111,7 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
             border: "1px solid #e6e9ef",
             background: "#ffffff",
             cursor: "pointer",
-            fontWeight: 900,
+            fontWeight: 600,
           }}
         >
           ✕
@@ -91,13 +123,13 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
           style={{
             borderRadius: 12,
             padding: "10px 12px",
-            background: "rgba(247,249,252,0.85)",
-            border: "1px solid #e6e9ef",
+            ...statusTone,
             fontSize: 13,
             lineHeight: 1.35,
           }}
         >
-          <div style={{ fontWeight: 900 }}>Status: {statusLabel(status)}</div>
+          <div style={{ fontWeight: 600 }}>Status: {statusLabel(status)}</div>
+          <div style={{ marginTop: 3, fontWeight: 600 }}>{statusDetail}</div>
           {userEmail ? (
             <div style={{ marginTop: 3 }}>Signed in as {userEmail}</div>
           ) : email ? (
@@ -105,7 +137,7 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
           ) : (
             <div style={{ marginTop: 3 }}>Not signed in</div>
           )}
-          {recoveryMode ? <div style={{ marginTop: 3, fontWeight: 800 }}>Password recovery in progress</div> : null}
+          {recoveryMode ? <div style={{ marginTop: 3, fontWeight: 600 }}>Password recovery in progress</div> : null}
           {lastSyncedAt ? <div style={{ marginTop: 3 }}>Last sync: {new Date(lastSyncedAt).toLocaleString()}</div> : null}
         </div>
 
@@ -120,7 +152,7 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
               lineHeight: 1.35,
             }}
           >
-            <div style={{ fontWeight: 900 }}>Cloud sync is not configured.</div>
+            <div style={{ fontWeight: 600 }}>Cloud sync is not configured.</div>
             <div style={{ marginTop: 4 }}>Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in your environment, then restart the app.</div>
           </div>
         )}
@@ -141,7 +173,7 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
             </div>
 
             <div>
-              <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>New password</div>
+              <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.7, marginBottom: 6 }}>New password</div>
               <input
                 type="password"
                 value={password}
@@ -160,7 +192,7 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
             </div>
 
             <div>
-              <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>Confirm password</div>
+              <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.7, marginBottom: 6 }}>Confirm password</div>
               <input
                 type="password"
                 value={confirmPassword}
@@ -217,7 +249,7 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
             </div>
 
             <div>
-              <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>Email</div>
+              <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.7, marginBottom: 6 }}>Email</div>
               <input
                 type="email"
                 value={email}
@@ -236,7 +268,7 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
             </div>
 
             <div>
-              <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>Password</div>
+              <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.7, marginBottom: 6 }}>Password</div>
               <input
                 type="password"
                 value={password}
@@ -257,11 +289,11 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
             <div style={{ display: "flex", gap: 10 }}>
               {authMode === "signin" ? (
                 <Button onClick={signIn} disabled={!email || !password || isBusy} style={{ flex: 1 }}>
-                  Sign in
+                  {isAuthenticating ? "Signing in..." : "Sign in"}
                 </Button>
               ) : (
                 <Button onClick={signUp} disabled={!email || !password || isBusy} style={{ flex: 1 }}>
-                  Create account
+                  {isAuthenticating ? "Creating..." : "Create account"}
                 </Button>
               )}
               <Button onClick={onClose} style={{ flex: 1, opacity: 0.85 }}>
@@ -291,13 +323,23 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
         )}
 
         {isConfigured && signedIn && (
-          <div style={{ display: "flex", gap: 10 }}>
-            <Button onClick={syncNow} disabled={isBusy} style={{ flex: 1 }}>
-              Sync now
-            </Button>
-            <Button onClick={signOut} disabled={isBusy} style={{ flex: 1, opacity: 0.88 }}>
-              Sign out
-            </Button>
+          <div style={{ display: "grid", gap: 8 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <Button onClick={syncNow} disabled={isBusy} style={{ flex: 1 }}>
+                {isSyncing ? "Syncing..." : "Sync now"}
+              </Button>
+              <Button onClick={pullLatest} disabled={isBusy} style={{ flex: 1, opacity: 0.9 }}>
+                Pull latest
+              </Button>
+              <Button onClick={signOut} disabled={isBusy} style={{ flex: 1, opacity: 0.88 }}>
+                Sign out
+              </Button>
+            </div>
+            {showAdminMetricsAction && typeof onOpenAdminMetrics === "function" ? (
+              <Button onClick={onOpenAdminMetrics} style={{ width: "100%", opacity: 0.82 }}>
+                Admin metrics
+              </Button>
+            ) : null}
           </div>
         )}
 
@@ -309,11 +351,18 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
               background: "rgba(254,202,202,0.60)",
               border: "1px solid rgba(239,68,68,0.25)",
               fontSize: 12,
-              fontWeight: 800,
+              fontWeight: 600,
               lineHeight: 1.35,
             }}
           >
-            {error}
+            <div>{error}</div>
+            {signedIn ? (
+              <div style={{ marginTop: 8 }}>
+                <Button onClick={pullLatest} disabled={isBusy} style={{ width: "100%", minHeight: 38, opacity: 0.92 }}>
+                  Pull latest from cloud
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

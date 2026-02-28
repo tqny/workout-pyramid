@@ -123,21 +123,28 @@ export function calculateStreaks(store) {
 export function statusStyle(status) {
   if (status === "completed") {
     return {
-      background: "rgba(187, 247, 208, 0.65)",
-      border: "1px solid rgba(16,185,129,0.18)",
+      background:
+        "linear-gradient(180deg, rgba(223, 240, 224, 0.94) 0%, rgba(199, 226, 204, 0.88) 52%, rgba(172, 210, 181, 0.78) 100%)",
+      border: "1px solid rgba(72, 150, 92, 0.28)",
     };
   }
   if (status === "planned") {
     return {
-      background: "rgba(253, 230, 92, 0.42)",
-      border: "1px solid rgba(202,138,4,0.22)",
+      background:
+        "linear-gradient(180deg, rgba(252,246,229,0.95) 0%, rgba(244,231,195,0.90) 52%, rgba(234,214,165,0.82) 100%)",
+      border: "1px solid rgba(191,158,95,0.30)",
     };
   }
   if (status === "skipped") {
     return {
-      background: "rgba(254, 202, 202, 0.60)",
-      border: "1px solid rgba(239,68,68,0.18)",
+      background:
+        "linear-gradient(180deg, rgba(250,236,232,0.95) 0%, rgba(240,214,207,0.9) 52%, rgba(228,190,180,0.82) 100%)",
+      border: "1px solid rgba(181,129,117,0.30)",
     };
   }
-  return { background: "#ffffff", border: "1px solid #e6e9ef" };
+  return {
+    background:
+      "linear-gradient(180deg, rgba(255,253,248,0.98) 0%, rgba(250,244,235,0.96) 56%, rgba(245,235,220,0.93) 100%)",
+    border: "1px solid rgba(224, 210, 189, 0.92)",
+  };
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { addDays, isSameWeekMonday, toISODate } from "../app/date-utils";
+import { addDays, formatRange, isSameWeekMonday, startOfWeekMonday, toISODate } from "../app/date-utils";
 import { Button } from "./ui";
 import { MonthCell } from "./MonthCell";
 import { MonthInspector } from "./MonthInspector";
@@ -18,6 +18,8 @@ export function MonthView({
   todayISO,
   inspectorProps,
 }) {
+  const selectedWeekLabel = formatRange(startOfWeekMonday(new Date(monthFocusISO + "T00:00:00")));
+
   return (
     <>
       <div
@@ -33,13 +35,11 @@ export function MonthView({
         <Button onClick={onPrevMonth}>◀ {prevMonthLabel}</Button>
         <Button onClick={onNextMonth}>{nextMonthLabel} ▶</Button>
       </div>
-      <div style={{ marginTop: 8, fontSize: 12, opacity: 0.62, fontWeight: 700 }}>
-        Tap a date to inspect it, then use the panel to update details.
-      </div>
+      <div style={{ marginTop: 6, fontSize: 11, opacity: 0.6, fontWeight: 600 }}>Selected week: {selectedWeekLabel}</div>
 
       <div
         style={{
-          marginTop: 14,
+          marginTop: 12,
           display: "flex",
           flexWrap: "wrap",
           gap: 14,
@@ -55,7 +55,8 @@ export function MonthView({
               padding: "0 8px",
               color: "rgba(11,18,32,0.60)",
               fontSize: isCompactMonthGrid ? 11 : 12,
-              fontWeight: 800,
+              fontWeight: 600,
+              letterSpacing: 0.2,
             }}
           >
             {(isCompactMonthGrid ? ["M", "T", "W", "T", "F", "S", "S"] : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]).map((x, i) => (
@@ -80,9 +81,8 @@ export function MonthView({
                     gap: isCompactMonthGrid ? 6 : 10,
                     padding: isCompactMonthGrid ? 1 : 2,
                     borderRadius: 14,
-                    transition: "box-shadow 160ms ease, background 160ms ease",
-                    boxShadow: isFocusedWeek ? "inset 0 0 0 1px rgba(147,197,253,0.38)" : "none",
-                    background: isFocusedWeek ? "rgba(147,197,253,0.06)" : "transparent",
+                    transition: "background 160ms ease",
+                    background: isFocusedWeek ? "rgba(221, 202, 171, 0.20)" : "transparent",
                   }}
                 >
                   {Array.from({ length: 7 }).map((__, col) => {

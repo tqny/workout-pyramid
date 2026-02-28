@@ -10,10 +10,10 @@ import {
   startOfWeekMonday,
   toISODate,
 } from "./app/date-utils";
-import { hasSeenOnboarding, markOnboardingSeen } from "./app/onboarding-utils";
 import { calculateStreaks, statusFromEntry } from "./app/store-utils";
 import { THEME } from "./app/theme";
 import { AdminMetricsModal } from "./components/AdminMetricsModal";
+import { AuthGate } from "./components/AuthGate";
 import { CommitmentModal } from "./components/CommitmentModal";
 import { CloudSyncModal } from "./components/CloudSyncModal";
 import { DayEditorModal } from "./components/DayEditorModal";
@@ -42,7 +42,8 @@ export default function App() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(() => !hasSeenOnboarding());
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [hasPassedEntryGate, setHasPassedEntryGate] = useState(false);
   const [showAdminMetricsModal, setShowAdminMetricsModal] = useState(false);
   const [notice, setNotice] = useState(null);
   const [templateDays, setTemplateDays] = useState([0, 2, 4, 5]);
@@ -88,7 +89,12 @@ export default function App() {
     return count;
   }, [daysMonToSun, store.days]);
 
-  const remaining = Math.max(0, 4 - weekCompletedCount);
+  const weeklyGoal = useMemo(() => {
+    const parsed = Number(store.weeklyGoal);
+    if (!Number.isFinite(parsed)) return 4;
+    return Math.max(1, Math.min(14, Math.round(parsed)));
+  }, [store.weeklyGoal]);
+  const remaining = Math.max(0, weeklyGoal - weekCompletedCount);
   const streaks = useMemo(() => calculateStreaks(store), [store]);
   const weekSummary = useMemo(() => {
     let completed = 0;
@@ -110,11 +116,11 @@ export default function App() {
         label: d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
         statusLabel:
           status === "completed"
-            ? "Completed"
+            ? "Got it done"
             : status === "planned"
-              ? "Planned"
+              ? "Locked in"
               : status === "skipped"
-                ? "Skipped"
+                ? "Benched yourself"
                 : "Open",
         time: entry?.time || "",
       };
@@ -163,38 +169,6 @@ export default function App() {
   const overduePlannedTimeLabel = isPastPlannedTime ? formatClockTime(todayEntry?.time) : "";
   const overdueDurationLabel = isPastPlannedTime ? formatOverdueDuration(overduePlannedMinutes) : "";
 
-  const dashboardPrompt = useMemo(() => {
-    if (todayStatus === "completed") {
-      return { tone: "positive", text: "Today is logged. Protect the streak by planning tomorrow." };
-    }
-    if (weekCompletedCount >= 4) {
-      return { tone: "positive", text: "Weekly goal reached. Anything extra now is bonus momentum." };
-    }
-    if (todayStatus === "planned" && isPastPlannedTime) {
-      const when = overduePlannedTimeLabel || "earlier";
-      const lag = overdueDurationLabel ? ` (${overdueDurationLabel})` : "";
-      return { tone: "warning", text: `You planned for ${when}${lag}. Mark the outcome to stay honest.` };
-    }
-    if (todayStatus === "planned") {
-      const when = formatClockTime(todayEntry?.time);
-      return { tone: "info", text: when ? `Today's session is set for ${when}.` : "You have a plan for today." };
-    }
-    if (todayStatus === "skipped") {
-      return { tone: "info", text: "Recovery is valid. Re-plan when you're ready." };
-    }
-    if (remaining <= 1) {
-      return { tone: "warning", text: "One more workout this week will hit your goal." };
-    }
-    return { tone: "info", text: `${remaining} workouts left this week. Pick one and lock the time.` };
-  }, [
-    overdueDurationLabel,
-    overduePlannedTimeLabel,
-    remaining,
-    todayEntry?.time,
-    todayStatus,
-    weekCompletedCount,
-    isPastPlannedTime,
-  ]);
   const cloudSyncLabel = !cloudSync.isConfigured
     ? "Cloud setup"
     : cloudSync.user
@@ -210,30 +184,61 @@ export default function App() {
     : installPrompt.isIOS
       ? "Add to Home Screen"
       : "Install app";
-  const installTone = installPrompt.isStandalone ? "positive" : "info";
   const showAdminMetricsAction = (() => {
     if (typeof window === "undefined") return false;
     const params = new URLSearchParams(window.location.search);
-    return params.get("admin") === "1" || window.location.hostname === "localhost";
+    return params.get("admin") === "1";
   })();
 
   function openDayEditor(iso) {
     dayEditor.openDayEditor(iso);
   }
 
+  function restoreEntrySnapshot(iso, snapshot) {
+    setStore((prev) => {
+      const nextDays = { ...prev.days };
+      if (snapshot) {
+        nextDays[iso] = { ...snapshot };
+      } else {
+        delete nextDays[iso];
+      }
+      return { ...prev, days: nextDays };
+    });
+    setNotice({ tone: "positive", text: "Reverted last status change." });
+  }
+
+  function setQuickStatusNotice(nextLabel, previousEntry) {
+    setNotice({
+      tone: "info",
+      text: nextLabel,
+      actionLabel: "Undo",
+      onAction: () => restoreEntrySnapshot(todayISO, previousEntry),
+    });
+  }
+
+  function markTodayCompletedWithUndo() {
+    const previousEntry = todayEntry ? { ...todayEntry } : null;
+    commitment.markTodayCompleted();
+    setQuickStatusNotice("Marked today as done.", previousEntry);
+  }
+
+  function markTodaySkippedWithUndo() {
+    const previousEntry = todayEntry ? { ...todayEntry } : null;
+    commitment.markTodaySkipped();
+    setQuickStatusNotice("Marked today as skipped.", previousEntry);
+  }
+
   function closeWelcomeModal() {
-    markOnboardingSeen();
     setShowWelcomeModal(false);
   }
 
-  function openCloudFromWelcome() {
-    closeWelcomeModal();
-    setShowCloudSyncModal(true);
-  }
-
-  function openInstallFromWelcome() {
-    closeWelcomeModal();
-    setShowInstallModal(true);
+  function enterApp() {
+    setHasPassedEntryGate(true);
+    setView("week");
+    setWeekOffset(0);
+    setMonthOffset(0);
+    setMonthFocusISO(todayISO);
+    setShowWelcomeModal(true);
   }
 
   function handleMonthCellClick(iso) {
@@ -295,22 +300,31 @@ export default function App() {
     overdueDurationLabel,
     todayStatus,
     onOpenCommitPlanner: commitment.openCommitPlanner,
-    onMarkTodayCompleted: commitment.markTodayCompleted,
-    onMarkTodaySkipped: commitment.markTodaySkipped,
+    onMarkTodayCompleted: markTodayCompletedWithUndo,
+    onMarkTodaySkipped: markTodaySkippedWithUndo,
     onEditSelectedDay: () => {
       if (selectedISO) openDayEditor(selectedISO);
     },
   };
+
+  if (!hasPassedEntryGate) {
+    return (
+      <AuthGate
+        cloudSync={cloudSync}
+        onContinue={enterApp}
+        onContinueGuest={enterApp}
+      />
+    );
+  }
 
   return (
     <div
       style={{
         minHeight: "100vh",
         background:
-          "radial-gradient(circle at 8% 0%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.65) 24%, rgba(238,242,247,1) 70%)",
+          "radial-gradient(circle at 8% 0%, rgba(255,255,255,0.96) 0%, rgba(255,249,236,0.92) 28%, rgba(245,235,222,1) 76%)",
         color: THEME.ink,
-        fontFamily:
-          'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"',
+        fontFamily: THEME.font,
       }}
     >
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: 22 }}>
@@ -319,9 +333,15 @@ export default function App() {
           weekRangeLabel={weekRangeLabel}
           monthLabel={monthLabel}
           weekCompletedCount={weekCompletedCount}
+          weeklyGoal={weeklyGoal}
           remaining={remaining}
           streaks={streaks}
-          dashboardPrompt={dashboardPrompt}
+          onUpdateWeeklyGoal={(nextGoal) =>
+            setStore((prev) => ({
+              ...prev,
+              weeklyGoal: nextGoal,
+            }))
+          }
           onToggleView={() => setView(view === "week" ? "month" : "week")}
         />
 
@@ -330,11 +350,8 @@ export default function App() {
           cloudSyncTone={cloudSyncTone}
           onOpenCloudSync={() => setShowCloudSyncModal(true)}
           installLabel={installLabel}
-          installTone={installTone}
           onOpenInstall={() => setShowInstallModal(true)}
           disableInstall={installPrompt.isStandalone}
-          showAdminMetricsAction={showAdminMetricsAction}
-          onOpenAdminMetrics={() => setShowAdminMetricsModal(true)}
           onOpenReview={() => setShowReviewModal(true)}
           notice={notice}
         />
@@ -344,7 +361,7 @@ export default function App() {
             marginTop: 14,
             borderRadius: 22,
             border: `1px solid ${THEME.line}`,
-            background: "rgba(247,249,252,0.95)",
+            background: "rgba(250,242,230,0.94)",
             padding: 18,
             boxShadow: THEME.shadow,
           }}
@@ -356,8 +373,8 @@ export default function App() {
               todayISO={todayISO}
               isPhone={isPhone}
               onOpenEditor={openDayEditor}
-              onMarkTodayCompleted={commitment.markTodayCompleted}
-              onMarkTodaySkipped={commitment.markTodaySkipped}
+              onMarkTodayCompleted={markTodayCompletedWithUndo}
+              onMarkTodaySkipped={markTodaySkippedWithUndo}
               onPrevWeek={() => setWeekOffset((v) => v - 1)}
               onResetWeek={() => setWeekOffset(0)}
               onNextWeek={() => setWeekOffset((v) => v + 1)}
@@ -416,6 +433,11 @@ export default function App() {
           setShowCloudSyncModal(false);
         }}
         cloudSync={cloudSync}
+        showAdminMetricsAction={showAdminMetricsAction}
+        onOpenAdminMetrics={() => {
+          setShowCloudSyncModal(false);
+          setShowAdminMetricsModal(true);
+        }}
       />
 
       <InstallAppModal
@@ -443,8 +465,6 @@ export default function App() {
       <WelcomeModal
         open={showWelcomeModal}
         onClose={closeWelcomeModal}
-        onOpenCloudSync={openCloudFromWelcome}
-        onOpenInstall={openInstallFromWelcome}
       />
 
       <WeeklyReviewModal

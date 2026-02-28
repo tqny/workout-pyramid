@@ -20,10 +20,10 @@ export function RemindersModal({
           : "unsupported";
 
   return (
-    <ModalShell open={open} onClose={onClose}>
+    <ModalShell open={open} onClose={onClose} ariaLabel="Reminder settings">
       <div style={{ padding: 18, borderBottom: "1px solid #e6e9ef", display: "flex", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 950 }}>Reminder settings</div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>Reminder settings</div>
           <div style={{ fontSize: 12, opacity: 0.68, marginTop: 2 }}>
             Local browser notifications for planned time and end-of-day logging.
           </div>
@@ -39,7 +39,7 @@ export function RemindersModal({
             border: "1px solid #e6e9ef",
             background: "#ffffff",
             cursor: "pointer",
-            fontWeight: 900,
+            fontWeight: 600,
           }}
         >
           ✕
@@ -57,12 +57,12 @@ export function RemindersModal({
             lineHeight: 1.35,
           }}
         >
-          <div style={{ fontWeight: 900 }}>Browser support: {supportsNotifications ? "available" : "not available"}</div>
+          <div style={{ fontWeight: 600 }}>Browser support: {supportsNotifications ? "available" : "not available"}</div>
           <div style={{ marginTop: 3 }}>Permission: {permissionLabel}</div>
         </div>
 
         <div>
-          <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>Daily unresolved check time</div>
+          <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.7, marginBottom: 6 }}>Daily unresolved check time</div>
           <input
             type="time"
             value={settings.dailyCheckTime}

@@ -15,9 +15,9 @@ export function DayEditorModal({
   onSave,
 }) {
   return (
-    <ModalShell open={open} onClose={onClose}>
+    <ModalShell open={open} onClose={onClose} ariaLabel="Edit day">
       <div style={{ padding: 16, borderBottom: "1px solid #e6e9ef", display: "flex", justifyContent: "space-between" }}>
-        <div style={{ fontSize: 16, fontWeight: 950 }}>
+        <div style={{ fontSize: 16, fontWeight: 700 }}>
           {activeISO
             ? new Date(activeISO + "T00:00:00").toLocaleDateString(undefined, {
                 weekday: "long",
@@ -37,7 +37,7 @@ export function DayEditorModal({
             border: "1px solid #e6e9ef",
             background: "#ffffff",
             cursor: "pointer",
-            fontWeight: 900,
+            fontWeight: 600,
           }}
         >
           ✕
@@ -50,7 +50,10 @@ export function DayEditorModal({
             onClick={() => setDraftStatus("planned")}
             style={{
               flex: 1,
-              background: draftStatus === "planned" ? "rgba(253, 230, 92, 0.42)" : "#fff",
+              background:
+                draftStatus === "planned"
+                  ? "linear-gradient(180deg, rgba(252,246,229,0.95) 0%, rgba(244,231,195,0.88) 100%)"
+                  : "#fff",
             }}
           >
             Planned
@@ -68,7 +71,10 @@ export function DayEditorModal({
             onClick={() => setDraftStatus("skipped")}
             style={{
               flex: 1,
-              background: draftStatus === "skipped" ? "rgba(254,202,202,0.60)" : "#fff",
+              background:
+                draftStatus === "skipped"
+                  ? "linear-gradient(180deg, rgba(250,238,233,0.96) 0%, rgba(239,210,201,0.88) 100%)"
+                  : "#fff",
             }}
           >
             Skipped
@@ -77,7 +83,7 @@ export function DayEditorModal({
 
         <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
           <div>
-            <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>Start time</div>
+            <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.7, marginBottom: 6 }}>Start time</div>
             <input
               type="time"
               value={draftTime}
@@ -95,7 +101,7 @@ export function DayEditorModal({
           </div>
 
           <div>
-            <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>Session focus</div>
+            <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.7, marginBottom: 6 }}>Session focus</div>
             <input
               value={draftFocus}
               onChange={(e) => setDraftFocus(e.target.value)}

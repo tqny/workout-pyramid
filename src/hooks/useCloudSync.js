@@ -38,6 +38,7 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
   const suppressUploadUntilRef = useRef(0);
   const lastUploadedPayloadRef = useRef("");
   const bootstrappedUserIdRef = useRef(null);
+  const lastRemoteGuardAtRef = useRef(0);
 
   const payload = useMemo(
     () => ({ store: normalizeStore(store), reminders: normalizeReminderSettings(remindersSettings) }),
@@ -157,6 +158,45 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
         return false;
       }
 
+      const shouldGuardRemote = reason === "manual" || Date.now() - lastRemoteGuardAtRef.current > 15000;
+      if (shouldGuardRemote) {
+        lastRemoteGuardAtRef.current = Date.now();
+        const { data: remoteData, error: remoteFetchError } = await supabase
+          .from(SYNC_TABLE)
+          .select("store, reminders, updated_at")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (remoteFetchError) {
+          setStatus("error");
+          setError(remoteFetchError.message || "Failed to compare cloud state.");
+          return false;
+        }
+
+        if (remoteData) {
+          const remote = normalizeRemotePayload(remoteData);
+          const remotePayloadJson = JSON.stringify({
+            store: remote.store,
+            reminders: remote.reminders,
+          });
+          const remoteUpdatedAtMs = remote.updatedAt ? Date.parse(remote.updatedAt) : 0;
+          const lastKnownSyncMs = lastSyncedAt ? Date.parse(lastSyncedAt) : 0;
+          const remoteIsNewer = Number.isFinite(remoteUpdatedAtMs) && remoteUpdatedAtMs > (lastKnownSyncMs || 0) + 1000;
+          const remoteChangedSinceLastUpload = remotePayloadJson !== lastUploadedPayloadRef.current;
+          const localChangedSinceLastUpload = nextPayloadJson !== lastUploadedPayloadRef.current;
+
+          if (remoteIsNewer && remoteChangedSinceLastUpload && localChangedSinceLastUpload) {
+            setStatus("error");
+            setError("Cloud has newer changes from another device. Pull latest before syncing again.");
+            onNotice?.({
+              tone: "warning",
+              text: "Cloud conflict detected. Pull latest first, then retry sync.",
+            });
+            return false;
+          }
+        }
+      }
+
       setStatus("syncing");
       setError("");
 
@@ -177,7 +217,7 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
       setStatus("idle");
       return true;
     },
-    [isConfigured, user]
+    [isConfigured, lastSyncedAt, onNotice, user]
   );
 
   useEffect(() => {
@@ -426,6 +466,15 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
     return success;
   }
 
+  async function pullLatest() {
+    if (!user) return false;
+    const success = await pullFromCloud(user.id);
+    if (success) {
+      onNotice?.({ tone: "positive", text: "Pulled latest cloud data." });
+    }
+    return success;
+  }
+
   return {
     isConfigured,
     user,
@@ -449,5 +498,6 @@ export function useCloudSync({ store, remindersSettings, setStore, replaceRemind
     updateRecoveredPassword,
     signOut,
     syncNow,
+    pullLatest,
   };
 }

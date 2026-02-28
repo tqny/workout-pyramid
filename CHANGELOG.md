@@ -7,9 +7,23 @@ All notable changes to this project are documented in this file.
 ### Added
 - Evidence-first governance artifacts (`docs/*`, `.github/*`, `scripts/check-evidence.sh`).
 - Retroactive ADR/demo/metrics backfill set for historical project decisions and shipped features.
+- Coach Energy copy set for day states and nudges (`Locked in`, `Got it done`, `Benched yourself`, `Don't flake`).
+- Shared UI authority and app UX rubric governance docs for PR scoring and evidence (`docs/design/UI_AUTHORITY.md`, `docs/design/APP_UX_RUBRIC.md`).
 
 ### Changed
 - README and contribution workflow updated to enforce auditable delivery standards.
+- Refined warm-light visual system: softer typography weights, warmer calendar/card surfaces, and status colors tuned to muted warm green/yellow/red.
+- Header metrics now support editable weekly goals via the progress card, with balanced top-bar layout and unified neutral styling for install/admin action pills.
+- Entry flow now opens with a dedicated auth gate on every visit (sign in/create account/guest), then shows onboarding before revealing the main app in week view.
+- Welcome modal streamlined to a single-continue path with refreshed gradient cards and numbered practical setup guidance.
+- Week/month card polish: centered status headlines, compact mobile labels, emoji quick actions, aligned streak/progress typography, and rose-gold + lighter-gold status gradients propagated across planned/skipped surfaces.
+- iOS/mobile text-color hardening prevents blue auto-link/button text drift and keeps action/status copy in ink tones.
+- UI interaction quality sprint:
+  - modal dialogs now use focus trapping, `Escape` handling, and focus restore for keyboard accessibility;
+  - action bar now has clearer primary/secondary hierarchy;
+  - quick status actions support undo;
+  - cloud sync blocks overwriting newer remote data and offers pull-latest recovery;
+  - mobile week cards use adaptive sizing to reduce crowding.
 
 ## [0.6.0] - 2026-02-26
 Recorded retrospectively on 2026-02-27.

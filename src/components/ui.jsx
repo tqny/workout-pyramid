@@ -1,9 +1,30 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { THEME } from "../app/theme";
 
-export function Pill({ children, style }) {
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(", ");
+
+function getFocusable(container) {
+  if (!container) return [];
+  return Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter((el) => {
+    if (!(el instanceof HTMLElement)) return false;
+    if (el.hasAttribute("disabled")) return false;
+    if (el.getAttribute("aria-hidden") === "true") return false;
+    const style = window.getComputedStyle(el);
+    return style.display !== "none" && style.visibility !== "hidden";
+  });
+}
+
+export function Pill({ children, style, onClick }) {
   return (
     <div
+      onClick={onClick}
       style={{
         boxSizing: "border-box",
         borderRadius: 16,
@@ -11,6 +32,7 @@ export function Pill({ children, style }) {
         background: THEME.panel,
         padding: "11px 13px",
         boxShadow: "0 4px 14px rgba(16, 24, 40, 0.04)",
+        cursor: onClick ? "pointer" : "default",
         ...style,
       }}
     >
@@ -20,7 +42,7 @@ export function Pill({ children, style }) {
 }
 
 export function Button({ children, onClick, style, disabled = false }) {
-  const restingShadow = style?.boxShadow || "0 4px 14px rgba(16, 24, 40, 0.04)";
+  const restingShadow = style?.boxShadow || "0 6px 16px rgba(63, 44, 21, 0.08)";
 
   function shouldReduceMotion() {
     if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -36,10 +58,10 @@ export function Button({ children, onClick, style, disabled = false }) {
         boxSizing: "border-box",
         borderRadius: 14,
         border: `1px solid ${THEME.line}`,
-        background: THEME.panel,
+        background: "#fff9ef",
         color: THEME.ink,
         padding: "10px 13px",
-        fontWeight: 900,
+        fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         boxShadow: restingShadow,
         transition: "transform 120ms ease, box-shadow 120ms ease",
@@ -51,18 +73,18 @@ export function Button({ children, onClick, style, disabled = false }) {
         if (disabled) return;
         if (!shouldReduceMotion()) e.currentTarget.style.transform = "translateY(-1px)";
         e.currentTarget.style.boxShadow = e.currentTarget.matches(":focus-visible")
-          ? "0 0 0 3px rgba(59,130,246,0.28), 0 8px 22px rgba(16, 24, 40, 0.08)"
-          : "0 8px 22px rgba(16, 24, 40, 0.08)";
+          ? "0 0 0 3px rgba(245,158,11,0.32), 0 10px 24px rgba(63,44,21,0.12)"
+          : "0 10px 24px rgba(63,44,21,0.12)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "translateY(0px)";
         e.currentTarget.style.boxShadow = e.currentTarget.matches(":focus-visible")
-          ? `0 0 0 3px rgba(59,130,246,0.28), ${restingShadow}`
+          ? `0 0 0 3px rgba(245,158,11,0.32), ${restingShadow}`
           : restingShadow;
       }}
       onFocus={(e) => {
         if (!e.currentTarget.matches(":focus-visible")) return;
-        e.currentTarget.style.boxShadow = `0 0 0 3px rgba(59,130,246,0.28), ${restingShadow}`;
+        e.currentTarget.style.boxShadow = `0 0 0 3px rgba(245,158,11,0.32), ${restingShadow}`;
       }}
       onBlur={(e) => {
         e.currentTarget.style.transform = "translateY(0px)";
@@ -88,8 +110,8 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
         borderRadius: 18,
         border: `1px solid ${THEME.line}`,
         background:
-          "linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(247,249,252,0.92) 100%)",
-        boxShadow: "0 8px 20px rgba(16, 24, 40, 0.06)",
+          "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(250,241,228,0.95) 100%)",
+        boxShadow: "0 10px 22px rgba(63, 44, 21, 0.1)",
         overflow: "hidden",
       }}
     >
@@ -100,7 +122,7 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
             height: 54,
             borderRadius: 16,
             border: `1px solid ${THEME.line}`,
-            background: "rgba(255,255,255,0.95)",
+            background: "rgba(255,250,243,0.98)",
             display: "grid",
             placeItems: "center",
             boxShadow: "inset 0 1px 0 rgba(255,255,255,0.65)",
@@ -119,9 +141,9 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
           </svg>
         </div>
         <div style={{ lineHeight: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1.2, opacity: 0.66 }}>WORKOUT</div>
-          <div style={{ fontSize: 22, fontWeight: 950, marginTop: 4 }}>PYRAMID</div>
-          <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.6, marginTop: 8 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.15, opacity: 0.66 }}>WORKOUT</div>
+          <div style={{ fontSize: 22, fontWeight: 700, marginTop: 4 }}>PYRAMID</div>
+          <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.6, marginTop: 8 }}>
             Plan. Commit. Confirm.
           </div>
         </div>
@@ -133,9 +155,9 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
             borderRadius: 999,
             padding: "6px 10px",
             border: `1px solid ${THEME.line}`,
-            background: "rgba(255,255,255,0.95)",
+            background: "rgba(255,251,245,0.96)",
             fontSize: 11,
-            fontWeight: 900,
+            fontWeight: 700,
             letterSpacing: 0.5,
             opacity: 0.78,
           }}
@@ -147,9 +169,9 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
             borderRadius: 999,
             padding: "6px 10px",
             border: `1px solid ${THEME.line}`,
-            background: "rgba(255,255,255,0.95)",
+            background: "rgba(255,251,245,0.96)",
             fontSize: 12,
-            fontWeight: 800,
+            fontWeight: 600,
             opacity: 0.86,
           }}
         >
@@ -160,8 +182,77 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
   );
 }
 
-export function ModalShell({ open, onClose, children, noCloseOnBackdrop = false }) {
+export function ModalShell({ open, onClose, children, noCloseOnBackdrop = false, ariaLabel, ariaLabelledBy }) {
+  const dialogRef = useRef(null);
+  const restoreFocusRef = useRef(null);
+
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return undefined;
+
+    restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+
+    const initialTargets = getFocusable(dialog);
+    (initialTargets[0] || dialog).focus();
+
+    const priorBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (!noCloseOnBackdrop) {
+          e.preventDefault();
+          onClose();
+        }
+        return;
+      }
+
+      if (e.key !== "Tab") return;
+
+      const focusTargets = getFocusable(dialog);
+      if (focusTargets.length === 0) {
+        e.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const first = focusTargets[0];
+      const last = focusTargets[focusTargets.length - 1];
+      const active = document.activeElement;
+
+      if (e.shiftKey) {
+        if (active === first || active === dialog) {
+          e.preventDefault();
+          last.focus();
+        }
+        return;
+      }
+
+      if (active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = priorBodyOverflow;
+      try {
+        restoreFocusRef.current?.focus?.();
+      } catch {
+        // ignore focus restore failures
+      }
+    };
+  }, [open, onClose, noCloseOnBackdrop]);
+
   if (!open) return null;
+
+  const a11yLabelProps = ariaLabelledBy
+    ? { "aria-labelledby": ariaLabelledBy }
+    : { "aria-label": ariaLabel || "Dialog" };
+
   return (
     <div
       onMouseDown={(e) => {
@@ -177,13 +268,18 @@ export function ModalShell({ open, onClose, children, noCloseOnBackdrop = false 
         padding: 18,
         zIndex: 1000,
       }}
-    >
-      <div
-        style={{
-          width: "min(520px, 100%)",
-          borderRadius: 22,
-          background: THEME.panel,
-          border: `1px solid ${THEME.line}`,
+      >
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          tabIndex={-1}
+          {...a11yLabelProps}
+          style={{
+            width: "min(520px, 100%)",
+            borderRadius: 22,
+            background: THEME.panel,
+            border: `1px solid ${THEME.line}`,
           boxShadow: "0 20px 50px rgba(0,0,0,0.18)",
           overflow: "hidden",
         }}

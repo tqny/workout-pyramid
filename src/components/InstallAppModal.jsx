@@ -10,10 +10,10 @@ export function InstallAppModal({
   onPromptInstall,
 }) {
   return (
-    <ModalShell open={open} onClose={onClose}>
+    <ModalShell open={open} onClose={onClose} ariaLabel="Install app">
       <div style={{ padding: 18, borderBottom: "1px solid #e6e9ef", display: "flex", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 950 }}>Install app</div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>Install app</div>
           <div style={{ fontSize: 12, opacity: 0.68, marginTop: 2 }}>
             Add Workout Pyramid to your home screen for one-tap launch.
           </div>
@@ -29,7 +29,7 @@ export function InstallAppModal({
             border: "1px solid #e6e9ef",
             background: "#ffffff",
             cursor: "pointer",
-            fontWeight: 900,
+            fontWeight: 600,
           }}
         >
           ✕
@@ -72,7 +72,7 @@ export function InstallAppModal({
               lineHeight: 1.45,
             }}
           >
-            <div style={{ fontWeight: 900, marginBottom: 6 }}>iPhone steps</div>
+            <div style={{ fontWeight: 600, marginBottom: 6 }}>iPhone steps</div>
             <div>1. Open this app in Safari.</div>
             <div>2. Tap Share (square with up arrow).</div>
             <div>3. Tap Add to Home Screen.</div>

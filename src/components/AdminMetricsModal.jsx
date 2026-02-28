@@ -141,7 +141,7 @@ export function AdminMetricsModal({ open, onClose }) {
   }
 
   return (
-    <ModalShell open={open} onClose={onClose}>
+    <ModalShell open={open} onClose={onClose} ariaLabel="Admin metrics">
       <div
         style={{
           padding: 18,
@@ -153,7 +153,7 @@ export function AdminMetricsModal({ open, onClose }) {
         }}
       >
         <div>
-          <div style={{ fontSize: 18, fontWeight: 950 }}>Admin metrics</div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>Admin metrics</div>
           <div style={{ fontSize: 12, opacity: 0.68, marginTop: 2 }}>
             Active users, sign-ins, and auth risk indicators.
           </div>
@@ -169,7 +169,7 @@ export function AdminMetricsModal({ open, onClose }) {
             border: "1px solid #e6e9ef",
             background: "#ffffff",
             cursor: "pointer",
-            fontWeight: 900,
+            fontWeight: 600,
           }}
         >
           ✕
@@ -178,7 +178,7 @@ export function AdminMetricsModal({ open, onClose }) {
 
       <div style={{ padding: 18, display: "grid", gap: 12 }}>
         <div style={{ display: "grid", gap: 6 }}>
-          <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7 }}>Admin key</div>
+          <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.7 }}>Admin key</div>
           <input
             type="password"
             value={adminKey}
@@ -226,7 +226,7 @@ export function AdminMetricsModal({ open, onClose }) {
               borderRadius: 12,
               padding: "8px 10px",
               fontSize: 12,
-              fontWeight: 800,
+              fontWeight: 600,
               background: "rgba(247,249,252,0.85)",
               border: "1px solid #e6e9ef",
             }}
@@ -239,57 +239,57 @@ export function AdminMetricsModal({ open, onClose }) {
         {metrics ? (
           <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
             <div style={cardStyle("rgba(37,99,235,0.22)")}>
-              <div style={{ fontWeight: 900 }}>Total accounts</div>
-              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 950 }}>{valueFormat(metrics.totalUsers)}</div>
+              <div style={{ fontWeight: 600 }}>Total accounts</div>
+              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700 }}>{valueFormat(metrics.totalUsers)}</div>
               <div style={{ marginTop: 4, fontSize: 11, opacity: 0.72 }}>
                 Δ {formatDelta(metricDelta("totalUsers"))}
               </div>
             </div>
             <div style={cardStyle("rgba(16,185,129,0.25)")}>
-              <div style={{ fontWeight: 900 }}>Active sync (24h)</div>
-              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 950 }}>{valueFormat(metrics.activeSync24h)}</div>
+              <div style={{ fontWeight: 600 }}>Active sync (24h)</div>
+              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700 }}>{valueFormat(metrics.activeSync24h)}</div>
               <div style={{ marginTop: 4, fontSize: 11, opacity: 0.72 }}>
                 Δ {formatDelta(metricDelta("activeSync24h"))}
               </div>
             </div>
             <div style={cardStyle("rgba(16,185,129,0.2)")}>
-              <div style={{ fontWeight: 900 }}>Active sync (7d)</div>
-              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 950 }}>{valueFormat(metrics.activeSync7d)}</div>
+              <div style={{ fontWeight: 600 }}>Active sync (7d)</div>
+              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700 }}>{valueFormat(metrics.activeSync7d)}</div>
               <div style={{ marginTop: 4, fontSize: 11, opacity: 0.72 }}>
                 Δ {formatDelta(metricDelta("activeSync7d"))}
               </div>
             </div>
             <div style={cardStyle("rgba(37,99,235,0.18)")}>
-              <div style={{ fontWeight: 900 }}>Signed in (24h)</div>
-              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 950 }}>{valueFormat(metrics.signedIn24h)}</div>
+              <div style={{ fontWeight: 600 }}>Signed in (24h)</div>
+              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700 }}>{valueFormat(metrics.signedIn24h)}</div>
               <div style={{ marginTop: 4, fontSize: 11, opacity: 0.72 }}>
                 Δ {formatDelta(metricDelta("signedIn24h"))}
               </div>
             </div>
             <div style={cardStyle("rgba(37,99,235,0.15)")}>
-              <div style={{ fontWeight: 900 }}>Signed in (7d)</div>
-              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 950 }}>{valueFormat(metrics.signedIn7d)}</div>
+              <div style={{ fontWeight: 600 }}>Signed in (7d)</div>
+              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700 }}>{valueFormat(metrics.signedIn7d)}</div>
               <div style={{ marginTop: 4, fontSize: 11, opacity: 0.72 }}>
                 Δ {formatDelta(metricDelta("signedIn7d"))}
               </div>
             </div>
             <div style={cardStyle("rgba(245,158,11,0.22)")}>
-              <div style={{ fontWeight: 900 }}>New accounts (24h)</div>
-              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 950 }}>{valueFormat(metrics.created24h)}</div>
+              <div style={{ fontWeight: 600 }}>New accounts (24h)</div>
+              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700 }}>{valueFormat(metrics.created24h)}</div>
               <div style={{ marginTop: 4, fontSize: 11, opacity: 0.72 }}>
                 Δ {formatDelta(metricDelta("created24h"))}
               </div>
             </div>
             <div style={cardStyle("rgba(239,68,68,0.2)")}>
-              <div style={{ fontWeight: 900 }}>Unverified {">"}24h</div>
-              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 950 }}>{valueFormat(metrics.unverifiedOlderThan24h)}</div>
+              <div style={{ fontWeight: 600 }}>Unverified {">"}24h</div>
+              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700 }}>{valueFormat(metrics.unverifiedOlderThan24h)}</div>
               <div style={{ marginTop: 4, fontSize: 11, opacity: 0.72 }}>
                 Δ {formatDelta(metricDelta("unverifiedOlderThan24h"))}
               </div>
             </div>
             <div style={cardStyle("rgba(239,68,68,0.22)")}>
-              <div style={{ fontWeight: 900 }}>Attention needed</div>
-              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 950 }}>{valueFormat(metrics.attentionNeeded)}</div>
+              <div style={{ fontWeight: 600 }}>Attention needed</div>
+              <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700 }}>{valueFormat(metrics.attentionNeeded)}</div>
               <div style={{ marginTop: 4, fontSize: 11, opacity: 0.72 }}>
                 Δ {formatDelta(metricDelta("attentionNeeded"))}
               </div>
@@ -305,7 +305,7 @@ export function AdminMetricsModal({ open, onClose }) {
               background: "rgba(254,202,202,0.60)",
               border: "1px solid rgba(239,68,68,0.25)",
               fontSize: 12,
-              fontWeight: 800,
+              fontWeight: 600,
               lineHeight: 1.35,
             }}
           >

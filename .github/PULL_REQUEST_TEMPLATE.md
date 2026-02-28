@@ -19,6 +19,14 @@ Who benefits and what behavior changed?
 
 Commands run and outcomes:
 
+## UI/UX Quality Gates (Required)
+
+- UI Quality Score: __/16 (from `docs/design/UI_AUTHORITY.md`)
+- App UX Score: __/16 (from `docs/design/APP_UX_RUBRIC.md`)
+
+If either score is below ship threshold, link follow-up issue before merge:
+- Follow-up issue link:
+
 ## Risks and Rollback
 
 Primary risk:

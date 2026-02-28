@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { THEME } from "../app/theme";
 import { BrandMark, Button, Pill } from "./ui";
 
@@ -7,36 +7,40 @@ export function HeaderCard({
   weekRangeLabel,
   monthLabel,
   weekCompletedCount,
+  weeklyGoal,
   remaining,
   streaks,
-  dashboardPrompt,
+  onUpdateWeeklyGoal,
   onToggleView,
 }) {
-  const promptStyleByTone = {
-    info: {
-      background: "rgba(219,234,254,0.55)",
-      border: "1px solid rgba(37,99,235,0.18)",
-      color: "#0f172a",
-    },
-    warning: {
-      background: "rgba(254,243,199,0.70)",
-      border: "1px solid rgba(202,138,4,0.2)",
-      color: "#111827",
-    },
-    positive: {
-      background: "rgba(187,247,208,0.55)",
-      border: "1px solid rgba(16,185,129,0.2)",
-      color: "#0f172a",
-    },
-  };
-  const promptStyle = promptStyleByTone[dashboardPrompt?.tone] || promptStyleByTone.info;
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
+  const [goalDraft, setGoalDraft] = useState(String(weeklyGoal));
+
+  function normalizeGoal(raw) {
+    const parsed = Number.parseInt(raw, 10);
+    if (Number.isNaN(parsed)) return weeklyGoal;
+    return Math.max(1, Math.min(14, parsed));
+  }
+
+  function saveGoal() {
+    const nextGoal = normalizeGoal(goalDraft);
+    onUpdateWeeklyGoal?.(nextGoal);
+    setIsEditingGoal(false);
+  }
+
+  function cancelGoalEdit() {
+    setGoalDraft(String(weeklyGoal));
+    setIsEditingGoal(false);
+  }
+
+  const progressPercent = Math.min(100, (weekCompletedCount / Math.max(1, weeklyGoal)) * 100);
 
   return (
     <div
       style={{
         borderRadius: 22,
         border: `1px solid ${THEME.line}`,
-        background: "rgba(255,255,255,0.88)",
+        background: "rgba(255,250,243,0.92)",
         backdropFilter: "blur(8px)",
         padding: 18,
         display: "flex",
@@ -58,52 +62,163 @@ export function HeaderCard({
       >
         <BrandMark view={view} weekRangeLabel={weekRangeLabel} monthLabel={monthLabel} />
 
-        <div style={{ display: "grid", gap: 10, alignContent: "start", minWidth: 0 }}>
-          <Pill style={{ padding: "13px 14px", borderRadius: 18 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, gap: 10 }}>
-              <div style={{ fontWeight: 900 }}>Completed: {weekCompletedCount}/4</div>
-              <div style={{ opacity: 0.7 }}>Remaining: {remaining}</div>
-            </div>
-            <div
+        <div style={{ display: "grid", gap: 10, alignContent: "start", minWidth: 0, gridTemplateRows: "auto auto" }}>
+          {isEditingGoal ? (
+            <Pill
               style={{
-                marginTop: 8,
-                height: 10,
-                borderRadius: 999,
-                background: "#edf1f7",
-                border: "1px solid #e6e9ef",
-                overflow: "hidden",
+                padding: "12px 13px",
+                borderRadius: 18,
+                minHeight: 82,
               }}
             >
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, gap: 10, alignItems: "center" }}>
+                <div style={{ fontWeight: 600 }}>
+                  Completed: {weekCompletedCount}/{weeklyGoal}
+                </div>
+                <div style={{ opacity: 0.72, fontWeight: 600 }}>Remaining: {remaining}</div>
+              </div>
               <div
                 style={{
-                  height: "100%",
-                  width: `${Math.min(100, (weekCompletedCount / 4) * 100)}%`,
-                  background: "#0b1220",
+                  marginTop: 8,
+                  height: 10,
                   borderRadius: 999,
-                  transition: "width 180ms ease",
+                  background: "#efe5d7",
+                  border: "1px solid #dfcfb8",
+                  overflow: "hidden",
                 }}
-              />
-            </div>
-          </Pill>
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${progressPercent}%`,
+                    background:
+                      "linear-gradient(90deg, rgba(223,240,224,0.94) 0%, rgba(199,226,204,0.88) 52%, rgba(172,210,181,0.82) 100%)",
+                    borderRadius: 999,
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.46)",
+                    transition: "width 180ms ease",
+                  }}
+                />
+              </div>
 
-          <Pill
-            style={{
-              minWidth: 0,
-              padding: "12px 13px",
-              borderRadius: 16,
-              ...promptStyle,
-            }}
-          >
-            <div style={{ fontSize: 13, fontWeight: 800, lineHeight: 1.35 }}>
-              {dashboardPrompt?.text}
-            </div>
-          </Pill>
+              <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.78 }}>Weekly goal</div>
+                <input
+                  type="number"
+                  min={1}
+                  max={14}
+                  value={goalDraft}
+                  onChange={(e) => setGoalDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveGoal();
+                    if (e.key === "Escape") cancelGoalEdit();
+                  }}
+                  style={{
+                    width: 70,
+                    padding: "5px 8px",
+                    borderRadius: 10,
+                    border: `1px solid ${THEME.line}`,
+                    background: "#fffdf9",
+                    color: THEME.ink,
+                    fontWeight: 600,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={saveGoal}
+                  style={{
+                    borderRadius: 10,
+                    border: `1px solid ${THEME.line}`,
+                    background: "#fff9ef",
+                    color: THEME.ink,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    padding: "5px 9px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelGoalEdit}
+                  style={{
+                    borderRadius: 10,
+                    border: `1px solid ${THEME.line}`,
+                    background: "#fff9ef",
+                    color: THEME.ink,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    padding: "5px 9px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </Pill>
+          ) : (
+            <button
+              type="button"
+              aria-label={`Weekly progress ${weekCompletedCount} of ${weeklyGoal}. Edit weekly goal.`}
+              onClick={() => {
+                setGoalDraft(String(weeklyGoal));
+                setIsEditingGoal(true);
+              }}
+              style={{
+                width: "100%",
+                textAlign: "left",
+                borderRadius: 18,
+                border: `1px solid ${THEME.line}`,
+                background: THEME.panel,
+                padding: "12px 13px",
+                minHeight: 82,
+                boxShadow: "0 4px 14px rgba(16, 24, 40, 0.04)",
+                color: THEME.ink,
+                WebkitTextFillColor: THEME.ink,
+                cursor: "pointer",
+                outline: "none",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, gap: 10, alignItems: "center" }}>
+                <div style={{ fontWeight: 600 }}>
+                  Completed: {weekCompletedCount}/{weeklyGoal}
+                </div>
+                <div style={{ opacity: 0.72, fontWeight: 600 }}>Remaining: {remaining}</div>
+              </div>
+              <div
+                style={{
+                  marginTop: 8,
+                  height: 10,
+                  borderRadius: 999,
+                  background: "#efe5d7",
+                  border: "1px solid #dfcfb8",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${progressPercent}%`,
+                    background:
+                      "linear-gradient(90deg, rgba(223,240,224,0.94) 0%, rgba(199,226,204,0.88) 52%, rgba(172,210,181,0.82) 100%)",
+                    borderRadius: 999,
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.46)",
+                    transition: "width 180ms ease",
+                  }}
+                />
+              </div>
+              <div style={{ marginTop: 8, fontSize: 12, opacity: 0.68, fontWeight: 600 }}>Tap to edit weekly goal.</div>
+            </button>
+          )}
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10 }}>
             <Pill style={{ minWidth: 0, padding: "13px 14px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, gap: 10 }}>
-                <div style={{ fontWeight: 900 }}>🔥 Streak: {streaks.current}</div>
-                <div style={{ opacity: 0.7 }}>Best: {streaks.best}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, gap: 10, lineHeight: 1.1 }}>
+                <div style={{ fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <span aria-hidden style={{ fontSize: 14, lineHeight: 1, transform: "translateY(-0.5px)" }}>🔥</span>
+                  <span>Streak: {streaks.current}</span>
+                </div>
+                <div style={{ opacity: 0.72, fontWeight: 600 }}>Best: {streaks.best}</div>
               </div>
             </Pill>
 

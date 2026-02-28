@@ -25,6 +25,13 @@ function nextMondayISO() {
   return isoDate(monday);
 }
 
+async function enterAppAsGuest(page) {
+  await expect(page.getByRole('button', { name: 'Use app as guest' })).toBeVisible();
+  await page.getByRole('button', { name: 'Use app as guest' }).click();
+  await expect(page.getByText('Welcome to Workout Pyramid')).toBeVisible();
+  await page.getByRole('button', { name: 'Continue' }).click();
+}
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(({ key, onboardingKey }) => {
     localStorage.removeItem(key);
@@ -35,6 +42,7 @@ test.beforeEach(async ({ page }) => {
 
 test('loads dashboard and toggles week/month views', async ({ page }) => {
   await page.goto('/');
+  await enterAppAsGuest(page);
 
   await expect(page.getByText('Training today?')).toBeVisible();
   await page.getByRole('button', { name: 'Rest day' }).click();
@@ -54,6 +62,7 @@ test('loads dashboard and toggles week/month views', async ({ page }) => {
 
 test('can plan today from commitment modal and mark done from month inspector', async ({ page }) => {
   await page.goto('/');
+  await enterAppAsGuest(page);
 
   await expect(page.getByText('Training today?')).toBeVisible();
   await page.getByRole('button', { name: 'Yes, I am' }).click();
@@ -74,6 +83,7 @@ test('can plan today from commitment modal and mark done from month inspector', 
 
 test('opens day editor from week card and saves focus text', async ({ page }) => {
   await page.goto('/');
+  await enterAppAsGuest(page);
 
   await page.getByRole('button', { name: 'Rest day' }).click();
 
@@ -98,19 +108,21 @@ test('opens day editor from week card and saves focus text', async ({ page }) =>
 
 test('month inspector actions are visible on mobile viewport', async ({ page }) => {
   await page.goto('/');
+  await enterAppAsGuest(page);
 
   await page.getByRole('button', { name: 'Yes, I am' }).click();
   await page.getByLabel('Workout start time').fill('20:15');
   await page.getByRole('button', { name: 'Commit time' }).click();
 
   await page.getByRole('button', { name: 'Month' }).click();
-  await expect(page.getByText('Tap a date to inspect it, then use the panel to update details.')).toBeVisible();
+  await expect(page.getByText(/Selected week:/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Mark done' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Skip today' })).toBeVisible();
 });
 
 test('weekly review can apply next-week template plan', async ({ page }) => {
   await page.goto('/');
+  await enterAppAsGuest(page);
 
   await page.getByRole('button', { name: 'Rest day' }).click();
   await page.getByRole('button', { name: 'Weekly review' }).click();
