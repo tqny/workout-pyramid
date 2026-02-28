@@ -12,6 +12,8 @@ required_files=(
   "docs/demos/DEMO_LOG_TEMPLATE.md"
   "docs/templates/PROJECT_CASE_STUDY_TEMPLATE.md"
   "docs/templates/EXECUTION_RHYTHM_CHECKLIST.md"
+  "docs/design/UI_AUTHORITY.md"
+  "docs/design/APP_UX_RUBRIC.md"
   ".github/PULL_REQUEST_TEMPLATE.md"
   ".github/ISSUE_TEMPLATE/bug_report.md"
   ".github/ISSUE_TEMPLATE/feature_request.md"

@@ -44,10 +44,14 @@ Tradeoffs:
 
 Evidence artifacts:
 - Standard: `docs/EVIDENCE_STANDARD.md`
+- UI authority: `docs/design/UI_AUTHORITY.md`
+- App UX rubric: `docs/design/APP_UX_RUBRIC.md`
 - Changelog: `CHANGELOG.md`
 - ADRs: `docs/adr/`
 - Demo logs: `docs/demos/`
 - Weekly metrics snapshots: `docs/metrics/`
+
+All UI/UX PRs must include both scores: UI Quality Score and App UX Score.
 
 ## Live Demo / Repo Links
 - Live: https://workout-pyramid.vercel.app

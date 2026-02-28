@@ -7,12 +7,13 @@ All notable changes to this project are documented in this file.
 ### Added
 - Evidence-first governance artifacts (`docs/*`, `.github/*`, `scripts/check-evidence.sh`).
 - Retroactive ADR/demo/metrics backfill set for historical project decisions and shipped features.
-- Matrix x Tetris-inspired visual theme tokens and shared tone/status palette.
-- Gym-bro humor microcopy for empty/future-day nudges in week/month surfaces.
+- Coach Energy copy set for day states and nudges (`Locked in`, `Got it done`, `Benched yourself`, `Don't flake`).
+- Shared UI authority and app UX rubric governance docs for PR scoring and evidence (`docs/design/UI_AUTHORITY.md`, `docs/design/APP_UX_RUBRIC.md`).
 
 ### Changed
 - README and contribution workflow updated to enforce auditable delivery standards.
-- Core dashboard surfaces (header, action bar, week/month cards, inspector) now use a darker neon-accent style system for stronger visual identity and state contrast.
+- Refined warm-light visual system: softer typography weights, warmer calendar/card surfaces, and status colors tuned to muted warm green/yellow/red.
+- Header metrics now support editable weekly goals via the progress card, with balanced top-bar layout and unified neutral styling for install/admin action pills.
 
 ## [0.6.0] - 2026-02-26
 Recorded retrospectively on 2026-02-27.
