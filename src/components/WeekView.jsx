@@ -74,23 +74,21 @@ export function WeekView({
       <div
         style={{
           marginTop: 16,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
           gap: 10,
-          flexWrap: "wrap",
         }}
       >
-        <Button onClick={onPrevWeek} style={{ minWidth: 100, flex: "1 1 160px" }}>
-          ◀ Previous week
+        <Button onClick={onPrevWeek} style={{ width: "100%", minHeight: 44, whiteSpace: "nowrap", fontWeight: 700 }}>
+          {isPhone ? "◀ Prev" : "◀ Previous week"}
         </Button>
 
-        <Button onClick={onResetWeek} style={{ minWidth: 80, fontWeight: 950, flex: "0 1 120px" }}>
+        <Button onClick={onResetWeek} style={{ width: "100%", minHeight: 44, whiteSpace: "nowrap", fontWeight: 700 }}>
           This week
         </Button>
 
-        <Button onClick={onNextWeek} style={{ minWidth: 100, flex: "1 1 160px" }}>
-          Next week ▶
+        <Button onClick={onNextWeek} style={{ width: "100%", minHeight: 44, whiteSpace: "nowrap", fontWeight: 700 }}>
+          {isPhone ? "Next ▶" : "Next week ▶"}
         </Button>
       </div>
     </>

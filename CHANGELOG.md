@@ -14,6 +14,12 @@ All notable changes to this project are documented in this file.
 - README and contribution workflow updated to enforce auditable delivery standards.
 - Refined warm-light visual system: softer typography weights, warmer calendar/card surfaces, and status colors tuned to muted warm green/yellow/red.
 - Header metrics now support editable weekly goals via the progress card, with balanced top-bar layout and unified neutral styling for install/admin action pills.
+- UI interaction quality sprint:
+  - modal dialogs now use focus trapping, `Escape` handling, and focus restore for keyboard accessibility;
+  - action bar now has clearer primary/secondary hierarchy;
+  - quick status actions support undo;
+  - cloud sync blocks overwriting newer remote data and offers pull-latest recovery;
+  - mobile week cards use adaptive sizing to reduce crowding.
 
 ## [0.6.0] - 2026-02-26
 Recorded retrospectively on 2026-02-27.

@@ -33,10 +33,38 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
     updateRecoveredPassword,
     signOut,
     syncNow,
+    pullLatest,
   } = cloudSync;
 
   const recoveryMode = authMode === "reset";
   const signedIn = !!user && !recoveryMode;
+  const isSyncing = status === "syncing";
+  const isAuthenticating = status === "auth";
+  const isErrored = status === "error";
+  const statusTone = isErrored
+    ? {
+        background: "rgba(254,202,202,0.55)",
+        border: "1px solid rgba(239,68,68,0.28)",
+        color: "#7f1d1d",
+      }
+    : isSyncing || isAuthenticating
+      ? {
+          background: "rgba(219,234,254,0.52)",
+          border: "1px solid rgba(37,99,235,0.24)",
+          color: "#1d4ed8",
+        }
+      : {
+          background: "rgba(240,253,250,0.7)",
+          border: "1px solid rgba(16,185,129,0.2)",
+          color: "#065f46",
+        };
+  const statusDetail = isSyncing
+    ? "Sync in progress. Keep this window open."
+    : isAuthenticating
+      ? "Authenticating account request."
+      : isErrored
+        ? "Action needed before sync can continue."
+        : "Everything is ready.";
   const authLinkStyle = {
     border: "none",
     background: "transparent",
@@ -60,7 +88,7 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
   };
 
   return (
-    <ModalShell open={open} onClose={onClose}>
+    <ModalShell open={open} onClose={onClose} ariaLabel="Cloud sync">
       <div style={{ padding: 18, borderBottom: "1px solid #e6e9ef", display: "flex", justifyContent: "space-between" }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 950 }}>Cloud sync</div>
@@ -91,13 +119,13 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
           style={{
             borderRadius: 12,
             padding: "10px 12px",
-            background: "rgba(247,249,252,0.85)",
-            border: "1px solid #e6e9ef",
+            ...statusTone,
             fontSize: 13,
             lineHeight: 1.35,
           }}
         >
-          <div style={{ fontWeight: 900 }}>Status: {statusLabel(status)}</div>
+          <div style={{ fontWeight: 800 }}>Status: {statusLabel(status)}</div>
+          <div style={{ marginTop: 3, fontWeight: 600 }}>{statusDetail}</div>
           {userEmail ? (
             <div style={{ marginTop: 3 }}>Signed in as {userEmail}</div>
           ) : email ? (
@@ -257,11 +285,11 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
             <div style={{ display: "flex", gap: 10 }}>
               {authMode === "signin" ? (
                 <Button onClick={signIn} disabled={!email || !password || isBusy} style={{ flex: 1 }}>
-                  Sign in
+                  {isAuthenticating ? "Signing in..." : "Sign in"}
                 </Button>
               ) : (
                 <Button onClick={signUp} disabled={!email || !password || isBusy} style={{ flex: 1 }}>
-                  Create account
+                  {isAuthenticating ? "Creating..." : "Create account"}
                 </Button>
               )}
               <Button onClick={onClose} style={{ flex: 1, opacity: 0.85 }}>
@@ -291,9 +319,12 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
         )}
 
         {isConfigured && signedIn && (
-          <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <Button onClick={syncNow} disabled={isBusy} style={{ flex: 1 }}>
-              Sync now
+              {isSyncing ? "Syncing..." : "Sync now"}
+            </Button>
+            <Button onClick={pullLatest} disabled={isBusy} style={{ flex: 1, opacity: 0.9 }}>
+              Pull latest
             </Button>
             <Button onClick={signOut} disabled={isBusy} style={{ flex: 1, opacity: 0.88 }}>
               Sign out
@@ -313,7 +344,14 @@ export function CloudSyncModal({ open, onClose, cloudSync }) {
               lineHeight: 1.35,
             }}
           >
-            {error}
+            <div>{error}</div>
+            {signedIn ? (
+              <div style={{ marginTop: 8 }}>
+                <Button onClick={pullLatest} disabled={isBusy} style={{ width: "100%", minHeight: 38, opacity: 0.92 }}>
+                  Pull latest from cloud
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

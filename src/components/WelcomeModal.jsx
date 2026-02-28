@@ -3,7 +3,7 @@ import { Button, ModalShell } from "./ui";
 
 export function WelcomeModal({ open, onClose, onOpenCloudSync, onOpenInstall }) {
   return (
-    <ModalShell open={open} onClose={onClose}>
+    <ModalShell open={open} onClose={onClose} ariaLabel="Welcome">
       <div
         style={{
           padding: 18,

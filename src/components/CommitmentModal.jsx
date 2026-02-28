@@ -13,7 +13,7 @@ export function CommitmentModal({
   onSave,
 }) {
   return (
-    <ModalShell open={open} onClose={onClose} noCloseOnBackdrop={step === "ask"}>
+    <ModalShell open={open} onClose={onClose} noCloseOnBackdrop={step === "ask"} ariaLabel="Daily commitment">
       <div style={{ padding: 24 }}>
         {step === "ask" ? (
           <>

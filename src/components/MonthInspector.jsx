@@ -1,6 +1,5 @@
 import React from "react";
 import { formatAuditTimestamp } from "../app/date-utils";
-import { THEME, toneStyle } from "../app/theme";
 import { statusStyle } from "../app/store-utils";
 import { Button, Pill } from "./ui";
 
@@ -23,40 +22,40 @@ export function MonthInspector({
   const todayStamp = new Date(todayISO + "T00:00:00").getTime();
   const isFutureSelected = selectedStamp != null && selectedStamp > todayStamp;
   const isPastSelected = selectedStamp != null && selectedStamp < todayStamp;
-  const emptyPushLabel = isSelectedToday ? "Bar's loaded" : isFutureSelected ? "No excuses, champ" : "Own the log";
+  const emptyPushLabel = isSelectedToday ? "Pick your move" : isFutureSelected ? "Don't flake" : "Be honest";
 
   return (
     <Pill
       style={{
         borderRadius: 18,
         padding: 14,
-        background: "rgba(10,20,17,0.92)",
-        boxShadow: THEME.shadowSoft,
+        background: "rgba(255,255,255,0.90)",
+        boxShadow: "0 8px 20px rgba(17,24,39,0.05)",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-        <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 0.3, opacity: 0.7 }}>SELECTED DAY</div>
+        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.3, opacity: 0.7 }}>SELECTED DAY</div>
         <div
           style={{
             ...statusStyle(selectedStatus),
             borderRadius: 999,
             padding: "4px 10px",
             fontSize: 11,
-            fontWeight: 900,
+            fontWeight: 700,
             lineHeight: 1,
           }}
         >
           {selectedStatus === "completed"
-            ? "Done"
+            ? "Got it done"
             : selectedStatus === "planned"
-              ? "Planned"
+              ? "Locked in"
               : selectedStatus === "skipped"
-                ? "Recovery"
+                ? "Benched yourself"
                 : emptyPushLabel}
         </div>
       </div>
 
-      <div style={{ marginTop: 10, fontSize: 18, fontWeight: 950, lineHeight: 1.2 }}>
+      <div style={{ marginTop: 10, fontSize: 18, fontWeight: 800, lineHeight: 1.2 }}>
         {selectedISO
           ? new Date(selectedISO + "T00:00:00").toLocaleDateString(undefined, { weekday: "long" })
           : "No day selected"}
@@ -70,7 +69,7 @@ export function MonthInspector({
       </div>
 
       <div style={{ marginTop: 12, display: "grid", gap: 7 }}>
-        <div style={{ fontSize: 14, fontWeight: 900, lineHeight: 1.2 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>
           {selectedStatus === "completed" && "Workout complete"}
           {selectedStatus === "planned" && "Workout planned"}
           {selectedStatus === "skipped" && "Recovery day"}
@@ -83,9 +82,9 @@ export function MonthInspector({
           {selectedEntry?.focus ? `${selectedEntry.focus}` : ""}
           {!selectedEntry?.time && !selectedEntry?.focus && selectedStatus === "empty"
             ? isSelectedToday
-              ? " Make the call and log it."
+              ? " Pick a time. Future-you is watching."
               : isFutureSelected
-                ? " Pick a time now and lock it in."
+                ? " Pick a time. Future-you is watching."
                 : isPastSelected
                   ? " Record what happened."
                   : " Use Edit day to lock in your plan."
@@ -100,7 +99,7 @@ export function MonthInspector({
         )}
 
         {isSelectedToday && isPastPlannedTime && (
-          <div style={{ fontSize: 12, fontWeight: 800, color: THEME.accent.yellow }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#92400e" }}>
             Planned for {overduePlannedTimeLabel}
             {overdueDurationLabel ? ` (${overdueDurationLabel})` : ""}. Update this so your log stays accurate.
           </div>
@@ -116,7 +115,8 @@ export function MonthInspector({
                 <Button
                   onClick={onMarkTodayCompleted}
                   style={{
-                    ...toneStyle("positive"),
+                    background: "rgba(187,247,208,0.65)",
+                    border: "1px solid rgba(16,185,129,0.25)",
                   }}
                 >
                   Mark done

@@ -15,7 +15,7 @@ export function WeeklyReviewModal({
   onApplyTemplate,
 }) {
   return (
-    <ModalShell open={open} onClose={onClose}>
+    <ModalShell open={open} onClose={onClose} ariaLabel="Weekly review">
       <div style={{ padding: 18, borderBottom: "1px solid #e6e9ef", display: "flex", justifyContent: "space-between" }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 950 }}>Weekly review</div>

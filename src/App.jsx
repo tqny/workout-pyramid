@@ -88,7 +88,12 @@ export default function App() {
     return count;
   }, [daysMonToSun, store.days]);
 
-  const remaining = Math.max(0, 4 - weekCompletedCount);
+  const weeklyGoal = useMemo(() => {
+    const parsed = Number(store.weeklyGoal);
+    if (!Number.isFinite(parsed)) return 4;
+    return Math.max(1, Math.min(14, Math.round(parsed)));
+  }, [store.weeklyGoal]);
+  const remaining = Math.max(0, weeklyGoal - weekCompletedCount);
   const streaks = useMemo(() => calculateStreaks(store), [store]);
   const weekSummary = useMemo(() => {
     let completed = 0;
@@ -110,11 +115,11 @@ export default function App() {
         label: d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
         statusLabel:
           status === "completed"
-            ? "Completed"
+            ? "Got it done"
             : status === "planned"
-              ? "Planned"
+              ? "Locked in"
               : status === "skipped"
-                ? "Skipped"
+                ? "Benched yourself"
                 : "Open",
         time: entry?.time || "",
       };
@@ -163,38 +168,6 @@ export default function App() {
   const overduePlannedTimeLabel = isPastPlannedTime ? formatClockTime(todayEntry?.time) : "";
   const overdueDurationLabel = isPastPlannedTime ? formatOverdueDuration(overduePlannedMinutes) : "";
 
-  const dashboardPrompt = useMemo(() => {
-    if (todayStatus === "completed") {
-      return { tone: "positive", text: "Session logged. Keep the streak fed and line up tomorrow." };
-    }
-    if (weekCompletedCount >= 4) {
-      return { tone: "positive", text: "Goal hit. Bonus reps this week are pure flex." };
-    }
-    if (todayStatus === "planned" && isPastPlannedTime) {
-      const when = overduePlannedTimeLabel || "earlier";
-      const lag = overdueDurationLabel ? ` (${overdueDurationLabel})` : "";
-      return { tone: "warning", text: `You called ${when}${lag}. Time to post the result, champ.` };
-    }
-    if (todayStatus === "planned") {
-      const when = formatClockTime(todayEntry?.time);
-      return { tone: "info", text: when ? `Today's lift is locked for ${when}.` : "Plan is set. Go cash it in." };
-    }
-    if (todayStatus === "skipped") {
-      return { tone: "info", text: "Recovery counts. Re-rack and schedule the next one." };
-    }
-    if (remaining <= 1) {
-      return { tone: "warning", text: "One more session and the weekly target is yours." };
-    }
-    return { tone: "info", text: `${remaining} workouts left this week. Pick a slot and lock it in.` };
-  }, [
-    overdueDurationLabel,
-    overduePlannedTimeLabel,
-    remaining,
-    todayEntry?.time,
-    todayStatus,
-    weekCompletedCount,
-    isPastPlannedTime,
-  ]);
   const cloudSyncLabel = !cloudSync.isConfigured
     ? "Cloud setup"
     : cloudSync.user
@@ -210,7 +183,6 @@ export default function App() {
     : installPrompt.isIOS
       ? "Add to Home Screen"
       : "Install app";
-  const installTone = installPrompt.isStandalone ? "positive" : "info";
   const showAdminMetricsAction = (() => {
     if (typeof window === "undefined") return false;
     const params = new URLSearchParams(window.location.search);
@@ -219,6 +191,40 @@ export default function App() {
 
   function openDayEditor(iso) {
     dayEditor.openDayEditor(iso);
+  }
+
+  function restoreEntrySnapshot(iso, snapshot) {
+    setStore((prev) => {
+      const nextDays = { ...prev.days };
+      if (snapshot) {
+        nextDays[iso] = { ...snapshot };
+      } else {
+        delete nextDays[iso];
+      }
+      return { ...prev, days: nextDays };
+    });
+    setNotice({ tone: "positive", text: "Reverted last status change." });
+  }
+
+  function setQuickStatusNotice(nextLabel, previousEntry) {
+    setNotice({
+      tone: "info",
+      text: nextLabel,
+      actionLabel: "Undo",
+      onAction: () => restoreEntrySnapshot(todayISO, previousEntry),
+    });
+  }
+
+  function markTodayCompletedWithUndo() {
+    const previousEntry = todayEntry ? { ...todayEntry } : null;
+    commitment.markTodayCompleted();
+    setQuickStatusNotice("Marked today as done.", previousEntry);
+  }
+
+  function markTodaySkippedWithUndo() {
+    const previousEntry = todayEntry ? { ...todayEntry } : null;
+    commitment.markTodaySkipped();
+    setQuickStatusNotice("Marked today as skipped.", previousEntry);
   }
 
   function closeWelcomeModal() {
@@ -295,8 +301,8 @@ export default function App() {
     overdueDurationLabel,
     todayStatus,
     onOpenCommitPlanner: commitment.openCommitPlanner,
-    onMarkTodayCompleted: commitment.markTodayCompleted,
-    onMarkTodaySkipped: commitment.markTodaySkipped,
+    onMarkTodayCompleted: markTodayCompletedWithUndo,
+    onMarkTodaySkipped: markTodaySkippedWithUndo,
     onEditSelectedDay: () => {
       if (selectedISO) openDayEditor(selectedISO);
     },
@@ -306,7 +312,8 @@ export default function App() {
     <div
       style={{
         minHeight: "100vh",
-        background: THEME.pageGradient,
+        background:
+          "radial-gradient(circle at 8% 0%, rgba(255,255,255,0.96) 0%, rgba(255,249,236,0.92) 28%, rgba(245,235,222,1) 76%)",
         color: THEME.ink,
         fontFamily: THEME.font,
       }}
@@ -317,9 +324,15 @@ export default function App() {
           weekRangeLabel={weekRangeLabel}
           monthLabel={monthLabel}
           weekCompletedCount={weekCompletedCount}
+          weeklyGoal={weeklyGoal}
           remaining={remaining}
           streaks={streaks}
-          dashboardPrompt={dashboardPrompt}
+          onUpdateWeeklyGoal={(nextGoal) =>
+            setStore((prev) => ({
+              ...prev,
+              weeklyGoal: nextGoal,
+            }))
+          }
           onToggleView={() => setView(view === "week" ? "month" : "week")}
         />
 
@@ -328,7 +341,6 @@ export default function App() {
           cloudSyncTone={cloudSyncTone}
           onOpenCloudSync={() => setShowCloudSyncModal(true)}
           installLabel={installLabel}
-          installTone={installTone}
           onOpenInstall={() => setShowInstallModal(true)}
           disableInstall={installPrompt.isStandalone}
           showAdminMetricsAction={showAdminMetricsAction}
@@ -342,7 +354,7 @@ export default function App() {
             marginTop: 14,
             borderRadius: 22,
             border: `1px solid ${THEME.line}`,
-            background: THEME.panelSoft,
+            background: "rgba(250,242,230,0.94)",
             padding: 18,
             boxShadow: THEME.shadow,
           }}
@@ -354,8 +366,8 @@ export default function App() {
               todayISO={todayISO}
               isPhone={isPhone}
               onOpenEditor={openDayEditor}
-              onMarkTodayCompleted={commitment.markTodayCompleted}
-              onMarkTodaySkipped={commitment.markTodaySkipped}
+              onMarkTodayCompleted={markTodayCompletedWithUndo}
+              onMarkTodaySkipped={markTodaySkippedWithUndo}
               onPrevWeek={() => setWeekOffset((v) => v - 1)}
               onResetWeek={() => setWeekOffset(0)}
               onNextWeek={() => setWeekOffset((v) => v + 1)}

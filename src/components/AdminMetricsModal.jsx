@@ -141,7 +141,7 @@ export function AdminMetricsModal({ open, onClose }) {
   }
 
   return (
-    <ModalShell open={open} onClose={onClose}>
+    <ModalShell open={open} onClose={onClose} ariaLabel="Admin metrics">
       <div
         style={{
           padding: 18,

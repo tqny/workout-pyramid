@@ -1,6 +1,5 @@
 import React from "react";
 import { toISODate } from "../app/date-utils";
-import { THEME } from "../app/theme";
 import { statusFromEntry, statusStyle } from "../app/store-utils";
 
 export function MonthCell({
@@ -22,11 +21,11 @@ export function MonthCell({
   const dayStamp = new Date(iso + "T00:00:00").getTime();
   const todayStamp = new Date(todayISO + "T00:00:00").getTime();
   const isFutureDay = dayStamp > todayStamp;
-  const emptyPushLabel = dayStamp === todayStamp ? "Bar's loaded" : isFutureDay ? "No excuses, champ" : "Own the log";
+  const emptyPushLabel = dayStamp === todayStamp ? "Pick your move" : isFutureDay ? "Don't flake" : "Be honest";
   const ariaLabel = `${dateObj.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}, ${status}`;
   const restingShadow = isToday
-    ? "0 0 0 1.5px rgba(34,211,238,0.45), 0 6px 14px rgba(0,0,0,0.3)"
-    : "0 4px 10px rgba(0,0,0,0.24)";
+    ? "0 0 0 1.5px rgba(17,24,39,0.28), 0 6px 14px rgba(17,24,39,0.06)"
+    : "0 4px 10px rgba(17,24,39,0.04)";
 
   function shouldReduceMotion() {
     if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -51,7 +50,7 @@ export function MonthCell({
         width: "100%",
         opacity: inMonth ? 1 : 0.55,
         boxShadow: restingShadow,
-        outline: isSelected ? "2px solid rgba(34,211,238,0.6)" : "none",
+        outline: isSelected ? "2px solid rgba(17,24,39,0.48)" : "none",
         outlineOffset: 0,
         transition: "transform 120ms ease, box-shadow 120ms ease",
         overflow: "hidden",
@@ -62,7 +61,7 @@ export function MonthCell({
       onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
       onFocus={(e) => {
         if (!e.currentTarget.matches(":focus-visible")) return;
-        e.currentTarget.style.boxShadow = `0 0 0 3px ${THEME.focusRing}, ${restingShadow}`;
+        e.currentTarget.style.boxShadow = `0 0 0 3px rgba(245,158,11,0.3), ${restingShadow}`;
       }}
       onBlur={(e) => {
         e.currentTarget.style.transform = "translateY(0px)";
@@ -70,15 +69,15 @@ export function MonthCell({
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <div style={{ fontSize: compact ? 11 : 12, fontWeight: 950 }}>{dayNum}</div>
+        <div style={{ fontSize: compact ? 11 : 12, fontWeight: 800 }}>{dayNum}</div>
         {isToday && (
           <div
             style={{
               padding: compact ? "2px 5px" : "2px 8px",
               borderRadius: 999,
-              background: "rgba(34,211,238,0.22)",
+              background: "rgba(251,191,36,0.3)",
               fontSize: compact ? 10 : 11,
-              fontWeight: 900,
+              fontWeight: 700,
             }}
           >
             {compact ? "T" : "Today"}
@@ -89,11 +88,11 @@ export function MonthCell({
       {!compact && (
         <div style={{ marginTop: 6, fontSize: 12, opacity: 0.75 }}>
           {status === "completed"
-            ? "Crushed it"
+            ? "Got it done"
             : status === "planned"
               ? "Locked in"
               : status === "skipped"
-                ? "Benched"
+                ? "Benched yourself"
                 : emptyPushLabel}
         </div>
       )}
@@ -110,10 +109,10 @@ export function MonthCell({
             borderRadius: 999,
             background:
               status === "completed"
-                ? "rgba(74,222,128,0.95)"
+                ? "linear-gradient(90deg, rgba(131,183,142,0.95) 0%, rgba(174,212,183,0.9) 100%)"
                 : status === "planned"
-                  ? "rgba(250,204,21,0.95)"
-                  : "rgba(248,113,113,0.9)",
+                  ? "linear-gradient(90deg, rgba(196,158,92,0.94) 0%, rgba(231,210,151,0.9) 100%)"
+                  : "linear-gradient(90deg, rgba(194,126,117,0.92) 0%, rgba(223,177,168,0.88) 100%)",
           }}
         />
       )}

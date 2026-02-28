@@ -1,5 +1,4 @@
 import { nowTimestampISO, toISODate } from "./date-utils";
-import { statusSurface } from "./theme";
 
 const STORAGE_KEY = "workout_pyramid_store_v1";
 const COMMIT_KEY = "workout_pyramid_last_commit_check";
@@ -122,5 +121,29 @@ export function calculateStreaks(store) {
 }
 
 export function statusStyle(status) {
-  return statusSurface(status);
+  if (status === "completed") {
+    return {
+      background:
+        "linear-gradient(180deg, rgba(223, 240, 224, 0.94) 0%, rgba(199, 226, 204, 0.88) 52%, rgba(172, 210, 181, 0.78) 100%)",
+      border: "1px solid rgba(72, 150, 92, 0.28)",
+    };
+  }
+  if (status === "planned") {
+    return {
+      background:
+        "linear-gradient(180deg, rgba(250, 241, 209, 0.95) 0%, rgba(240, 224, 176, 0.9) 52%, rgba(230, 210, 145, 0.8) 100%)",
+      border: "1px solid rgba(182, 139, 66, 0.3)",
+    };
+  }
+  if (status === "skipped") {
+    return {
+      background:
+        "linear-gradient(180deg, rgba(247, 224, 219, 0.94) 0%, rgba(235, 199, 191, 0.88) 52%, rgba(224, 176, 167, 0.8) 100%)",
+      border: "1px solid rgba(179, 102, 92, 0.27)",
+    };
+  }
+  return {
+    background: "linear-gradient(180deg, rgba(248, 240, 228, 0.96) 0%, rgba(241, 230, 214, 0.94) 100%)",
+    border: "1px solid #e1d2bf",
+  };
 }

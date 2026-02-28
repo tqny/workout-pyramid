@@ -15,7 +15,7 @@ export function DayEditorModal({
   onSave,
 }) {
   return (
-    <ModalShell open={open} onClose={onClose}>
+    <ModalShell open={open} onClose={onClose} ariaLabel="Edit day">
       <div style={{ padding: 16, borderBottom: "1px solid #e6e9ef", display: "flex", justifyContent: "space-between" }}>
         <div style={{ fontSize: 16, fontWeight: 950 }}>
           {activeISO
