@@ -17,7 +17,7 @@ export function CommitmentModal({
       <div style={{ padding: 24 }}>
         {step === "ask" ? (
           <>
-            <div style={{ fontSize: 22, fontWeight: 950, textAlign: "center", marginBottom: 8 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, textAlign: "center", marginBottom: 8 }}>
               Training today?
             </div>
             <div style={{ fontSize: 14, opacity: 0.7, textAlign: "center", marginBottom: 24 }}>
@@ -55,7 +55,7 @@ export function CommitmentModal({
           </>
         ) : (
           <>
-            <div style={{ fontSize: 22, fontWeight: 950, textAlign: "center", marginBottom: 8 }}>Pick your start time</div>
+            <div style={{ fontSize: 22, fontWeight: 700, textAlign: "center", marginBottom: 8 }}>Pick your start time</div>
             <div style={{ fontSize: 14, opacity: 0.7, textAlign: "center", marginBottom: 24 }}>
               Choose a realistic time you can keep.
             </div>

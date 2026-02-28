@@ -8,40 +8,24 @@ export function ProductActionsBar({
   installLabel = "Install app",
   onOpenInstall,
   disableInstall = false,
-  showAdminMetricsAction = false,
-  onOpenAdminMetrics,
   onOpenReview,
   notice,
 }) {
-  const cloudNeedsAttention = cloudSyncTone !== "positive";
-  const primaryAction = cloudNeedsAttention
-    ? {
-        label: cloudSyncLabel,
-        onClick: onOpenCloudSync,
-        tone: cloudSyncTone,
-      }
-    : {
-        label: "Weekly review",
-        onClick: onOpenReview,
-        tone: "primary",
-      };
-
-  const secondaryActions = [
-    !cloudNeedsAttention
-      ? {
-          key: "cloud",
-          label: cloudSyncLabel,
-          onClick: onOpenCloudSync,
-          tone: cloudSyncTone,
-          disabled: false,
-        }
-      : {
-          key: "review",
-          label: "Weekly review",
-          onClick: onOpenReview,
-          tone: "info",
-          disabled: false,
-        },
+  const actionRow = [
+    {
+      key: "review",
+      label: "Weekly review",
+      onClick: onOpenReview,
+      tone: "primary",
+      disabled: false,
+    },
+    {
+      key: "cloud",
+      label: cloudSyncLabel,
+      onClick: onOpenCloudSync,
+      tone: cloudSyncTone,
+      disabled: false,
+    },
     {
       key: "install",
       label: installLabel,
@@ -49,16 +33,7 @@ export function ProductActionsBar({
       tone: "info",
       disabled: disableInstall,
     },
-    showAdminMetricsAction
-      ? {
-          key: "admin",
-          label: "Admin metrics",
-          onClick: onOpenAdminMetrics,
-          tone: "info",
-          disabled: false,
-        }
-      : null,
-  ].filter(Boolean);
+  ];
 
   const actionStyleByTone = {
     primary: {
@@ -103,43 +78,29 @@ export function ProductActionsBar({
 
   return (
     <Pill style={{ marginTop: 12, borderRadius: 18, padding: 12 }}>
-      <div style={{ display: "grid", gap: 10 }}>
-        <Button
-          onClick={primaryAction.onClick}
-          style={{
-            width: "100%",
-            minHeight: 46,
-            fontWeight: 700,
-            letterSpacing: 0.15,
-            ...(actionStyleByTone[primaryAction.tone] || actionStyleByTone.info),
-          }}
-        >
-          {primaryAction.label}
-        </Button>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-            gap: 8,
-          }}
-        >
-          {secondaryActions.map((action) => (
-            <Button
-              key={action.key}
-              onClick={action.onClick}
-              disabled={action.disabled}
-              style={{
-                width: "100%",
-                minHeight: 42,
-                fontWeight: 600,
-                ...(actionStyleByTone[action.tone] || actionStyleByTone.info),
-              }}
-            >
-              {action.label}
-            </Button>
-          ))}
-        </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: 8,
+        }}
+      >
+        {actionRow.map((action) => (
+          <Button
+            key={action.key}
+            onClick={action.onClick}
+            disabled={action.disabled}
+            style={{
+              width: "100%",
+              minHeight: 44,
+              fontWeight: 600,
+              letterSpacing: 0.1,
+              ...(actionStyleByTone[action.tone] || actionStyleByTone.info),
+            }}
+          >
+            {action.label}
+          </Button>
+        ))}
       </div>
 
       {notice?.text && (
@@ -149,7 +110,7 @@ export function ProductActionsBar({
             borderRadius: 12,
             padding: "8px 10px",
             fontSize: 12,
-            fontWeight: 800,
+            fontWeight: 600,
             lineHeight: 1.35,
             ...(noticeStyleByTone[notice.tone] || noticeStyleByTone.info),
           }}
@@ -166,7 +127,7 @@ export function ProductActionsBar({
                   background: "rgba(255,255,255,0.84)",
                   color: "#111827",
                   fontSize: 12,
-                  fontWeight: 700,
+                  fontWeight: 600,
                   lineHeight: 1,
                   padding: "6px 10px",
                   cursor: "pointer",

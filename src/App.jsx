@@ -10,10 +10,10 @@ import {
   startOfWeekMonday,
   toISODate,
 } from "./app/date-utils";
-import { hasSeenOnboarding, markOnboardingSeen } from "./app/onboarding-utils";
 import { calculateStreaks, statusFromEntry } from "./app/store-utils";
 import { THEME } from "./app/theme";
 import { AdminMetricsModal } from "./components/AdminMetricsModal";
+import { AuthGate } from "./components/AuthGate";
 import { CommitmentModal } from "./components/CommitmentModal";
 import { CloudSyncModal } from "./components/CloudSyncModal";
 import { DayEditorModal } from "./components/DayEditorModal";
@@ -42,7 +42,8 @@ export default function App() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(() => !hasSeenOnboarding());
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [hasPassedEntryGate, setHasPassedEntryGate] = useState(false);
   const [showAdminMetricsModal, setShowAdminMetricsModal] = useState(false);
   const [notice, setNotice] = useState(null);
   const [templateDays, setTemplateDays] = useState([0, 2, 4, 5]);
@@ -186,7 +187,7 @@ export default function App() {
   const showAdminMetricsAction = (() => {
     if (typeof window === "undefined") return false;
     const params = new URLSearchParams(window.location.search);
-    return params.get("admin") === "1" || window.location.hostname === "localhost";
+    return params.get("admin") === "1";
   })();
 
   function openDayEditor(iso) {
@@ -228,18 +229,16 @@ export default function App() {
   }
 
   function closeWelcomeModal() {
-    markOnboardingSeen();
     setShowWelcomeModal(false);
   }
 
-  function openCloudFromWelcome() {
-    closeWelcomeModal();
-    setShowCloudSyncModal(true);
-  }
-
-  function openInstallFromWelcome() {
-    closeWelcomeModal();
-    setShowInstallModal(true);
+  function enterApp() {
+    setHasPassedEntryGate(true);
+    setView("week");
+    setWeekOffset(0);
+    setMonthOffset(0);
+    setMonthFocusISO(todayISO);
+    setShowWelcomeModal(true);
   }
 
   function handleMonthCellClick(iso) {
@@ -308,6 +307,16 @@ export default function App() {
     },
   };
 
+  if (!hasPassedEntryGate) {
+    return (
+      <AuthGate
+        cloudSync={cloudSync}
+        onContinue={enterApp}
+        onContinueGuest={enterApp}
+      />
+    );
+  }
+
   return (
     <div
       style={{
@@ -343,8 +352,6 @@ export default function App() {
           installLabel={installLabel}
           onOpenInstall={() => setShowInstallModal(true)}
           disableInstall={installPrompt.isStandalone}
-          showAdminMetricsAction={showAdminMetricsAction}
-          onOpenAdminMetrics={() => setShowAdminMetricsModal(true)}
           onOpenReview={() => setShowReviewModal(true)}
           notice={notice}
         />
@@ -426,6 +433,11 @@ export default function App() {
           setShowCloudSyncModal(false);
         }}
         cloudSync={cloudSync}
+        showAdminMetricsAction={showAdminMetricsAction}
+        onOpenAdminMetrics={() => {
+          setShowCloudSyncModal(false);
+          setShowAdminMetricsModal(true);
+        }}
       />
 
       <InstallAppModal
@@ -453,8 +465,6 @@ export default function App() {
       <WelcomeModal
         open={showWelcomeModal}
         onClose={closeWelcomeModal}
-        onOpenCloudSync={openCloudFromWelcome}
-        onOpenInstall={openInstallFromWelcome}
       />
 
       <WeeklyReviewModal

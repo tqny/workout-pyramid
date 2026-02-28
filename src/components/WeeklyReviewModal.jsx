@@ -18,7 +18,7 @@ export function WeeklyReviewModal({
     <ModalShell open={open} onClose={onClose} ariaLabel="Weekly review">
       <div style={{ padding: 18, borderBottom: "1px solid #e6e9ef", display: "flex", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 950 }}>Weekly review</div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>Weekly review</div>
           <div style={{ fontSize: 12, opacity: 0.68, marginTop: 2 }}>{weekRangeLabel}</div>
         </div>
         <button
@@ -32,7 +32,7 @@ export function WeeklyReviewModal({
             border: "1px solid #e6e9ef",
             background: "#ffffff",
             cursor: "pointer",
-            fontWeight: 900,
+            fontWeight: 600,
           }}
         >
           ✕
@@ -42,20 +42,20 @@ export function WeeklyReviewModal({
       <div style={{ padding: 18, display: "grid", gap: 14, maxHeight: "75vh", overflow: "auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
           <div style={{ border: "1px solid #e6e9ef", borderRadius: 12, padding: "9px 10px", background: "#fff" }}>
-            <div style={{ fontSize: 11, opacity: 0.66, fontWeight: 800 }}>COMPLETED</div>
-            <div style={{ fontSize: 20, fontWeight: 950, marginTop: 2 }}>{summary.completed}</div>
+            <div style={{ fontSize: 11, opacity: 0.66, fontWeight: 600 }}>COMPLETED</div>
+            <div style={{ fontSize: 20, fontWeight: 700, marginTop: 2 }}>{summary.completed}</div>
           </div>
           <div style={{ border: "1px solid #e6e9ef", borderRadius: 12, padding: "9px 10px", background: "#fff" }}>
-            <div style={{ fontSize: 11, opacity: 0.66, fontWeight: 800 }}>PLANNED</div>
-            <div style={{ fontSize: 20, fontWeight: 950, marginTop: 2 }}>{summary.planned}</div>
+            <div style={{ fontSize: 11, opacity: 0.66, fontWeight: 600 }}>PLANNED</div>
+            <div style={{ fontSize: 20, fontWeight: 700, marginTop: 2 }}>{summary.planned}</div>
           </div>
           <div style={{ border: "1px solid #e6e9ef", borderRadius: 12, padding: "9px 10px", background: "#fff" }}>
-            <div style={{ fontSize: 11, opacity: 0.66, fontWeight: 800 }}>SKIPPED</div>
-            <div style={{ fontSize: 20, fontWeight: 950, marginTop: 2 }}>{summary.skipped}</div>
+            <div style={{ fontSize: 11, opacity: 0.66, fontWeight: 600 }}>SKIPPED</div>
+            <div style={{ fontSize: 20, fontWeight: 700, marginTop: 2 }}>{summary.skipped}</div>
           </div>
           <div style={{ border: "1px solid #e6e9ef", borderRadius: 12, padding: "9px 10px", background: "#fff" }}>
-            <div style={{ fontSize: 11, opacity: 0.66, fontWeight: 800 }}>OPEN</div>
-            <div style={{ fontSize: 20, fontWeight: 950, marginTop: 2 }}>{summary.open}</div>
+            <div style={{ fontSize: 11, opacity: 0.66, fontWeight: 600 }}>OPEN</div>
+            <div style={{ fontSize: 20, fontWeight: 700, marginTop: 2 }}>{summary.open}</div>
           </div>
         </div>
 
@@ -69,12 +69,12 @@ export function WeeklyReviewModal({
             lineHeight: 1.35,
           }}
         >
-          <div style={{ fontWeight: 900 }}>Logged completion rate: {summary.completionRate}%</div>
+          <div style={{ fontWeight: 600 }}>Logged completion rate: {summary.completionRate}%</div>
           <div style={{ marginTop: 3 }}>Rate is based on days you logged as completed or skipped.</div>
         </div>
 
         <div>
-          <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 8 }}>This week, day by day</div>
+          <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.7, marginBottom: 8 }}>This week, day by day</div>
           <div style={{ display: "grid", gap: 6 }}>
             {summary.rows.map((row) => (
               <div
@@ -89,7 +89,7 @@ export function WeeklyReviewModal({
                   gap: 10,
                 }}
               >
-                <div style={{ fontSize: 13, fontWeight: 800 }}>{row.label}</div>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{row.label}</div>
                 <div style={{ fontSize: 13, opacity: 0.75, textAlign: "right" }}>
                   {row.statusLabel}
                   {row.time ? ` • ${row.time}` : ""}
@@ -100,7 +100,7 @@ export function WeeklyReviewModal({
         </div>
 
         <div style={{ borderTop: "1px solid #e6e9ef", paddingTop: 12 }}>
-          <div style={{ fontSize: 13, fontWeight: 900, marginBottom: 8 }}>Plan next week template</div>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Plan next week template</div>
           <div style={{ display: "grid", gap: 10 }}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {DAY_LABELS.map((label, idx) => {
@@ -116,7 +116,7 @@ export function WeeklyReviewModal({
                       background: active ? "rgba(187,247,208,0.65)" : "#fff",
                       padding: "6px 10px",
                       fontSize: 12,
-                      fontWeight: 900,
+                      fontWeight: 600,
                       cursor: "pointer",
                     }}
                   >
@@ -127,7 +127,7 @@ export function WeeklyReviewModal({
             </div>
 
             <div>
-              <div style={{ fontSize: 12, fontWeight: 900, opacity: 0.7, marginBottom: 6 }}>Template start time</div>
+              <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.7, marginBottom: 6 }}>Template start time</div>
               <input
                 type="time"
                 value={templateTime}

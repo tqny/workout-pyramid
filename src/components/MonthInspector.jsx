@@ -1,6 +1,5 @@
 import React from "react";
 import { formatAuditTimestamp } from "../app/date-utils";
-import { statusStyle } from "../app/store-utils";
 import { Button, Pill } from "./ui";
 
 export function MonthInspector({
@@ -23,39 +22,65 @@ export function MonthInspector({
   const isFutureSelected = selectedStamp != null && selectedStamp > todayStamp;
   const isPastSelected = selectedStamp != null && selectedStamp < todayStamp;
   const emptyPushLabel = isSelectedToday ? "Pick your move" : isFutureSelected ? "Don't flake" : "Be honest";
+  const statusChipLabel =
+    selectedStatus === "completed"
+      ? "Got it done"
+      : selectedStatus === "planned"
+        ? "Locked in"
+        : selectedStatus === "skipped"
+          ? "Benched yourself"
+          : emptyPushLabel;
+  const statusChipTone =
+    selectedStatus === "completed"
+      ? {
+          color: "#2f5f3d",
+          background: "linear-gradient(180deg, rgba(236,248,239,0.96) 0%, rgba(219,240,225,0.9) 100%)",
+          border: "1px solid rgba(127,183,142,0.38)",
+        }
+      : selectedStatus === "planned"
+        ? {
+            color: "#6f582c",
+            background: "linear-gradient(180deg, rgba(252,246,229,0.95) 0%, rgba(244,231,195,0.88) 100%)",
+            border: "1px solid rgba(191,158,95,0.34)",
+          }
+        : selectedStatus === "skipped"
+          ? {
+              color: "#6f463f",
+              background: "linear-gradient(180deg, rgba(250,238,233,0.96) 0%, rgba(241,214,206,0.88) 100%)",
+              border: "1px solid rgba(186,134,123,0.34)",
+            }
+          : {
+              color: "#7a6f62",
+              background: "rgba(244,233,214,0.95)",
+              border: "1px solid rgba(197,174,139,0.42)",
+            };
 
   return (
     <Pill
       style={{
         borderRadius: 18,
         padding: 14,
-        background: "rgba(255,255,255,0.90)",
+        background: "linear-gradient(180deg, rgba(252,244,232,0.96) 0%, rgba(246,235,218,0.94) 100%)",
         boxShadow: "0 8px 20px rgba(17,24,39,0.05)",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.3, opacity: 0.7 }}>SELECTED DAY</div>
+        <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0.3, opacity: 0.7 }}>SELECTED DAY</div>
         <div
           style={{
-            ...statusStyle(selectedStatus),
             borderRadius: 999,
             padding: "4px 10px",
             fontSize: 11,
-            fontWeight: 700,
+            fontWeight: 500,
             lineHeight: 1,
+            ...statusChipTone,
           }}
         >
-          {selectedStatus === "completed"
-            ? "Got it done"
-            : selectedStatus === "planned"
-              ? "Locked in"
-              : selectedStatus === "skipped"
-                ? "Benched yourself"
-                : emptyPushLabel}
+          {statusChipLabel}
         </div>
       </div>
 
-      <div style={{ marginTop: 10, fontSize: 18, fontWeight: 800, lineHeight: 1.2 }}>
+      <div style={{ marginTop: 10, fontSize: 18, fontWeight: 700, lineHeight: 1.2 }}>
         {selectedISO
           ? new Date(selectedISO + "T00:00:00").toLocaleDateString(undefined, { weekday: "long" })
           : "No day selected"}
@@ -69,7 +94,7 @@ export function MonthInspector({
       </div>
 
       <div style={{ marginTop: 12, display: "grid", gap: 7 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.2 }}>
           {selectedStatus === "completed" && "Workout complete"}
           {selectedStatus === "planned" && "Workout planned"}
           {selectedStatus === "skipped" && "Recovery day"}
@@ -82,11 +107,11 @@ export function MonthInspector({
           {selectedEntry?.focus ? `${selectedEntry.focus}` : ""}
           {!selectedEntry?.time && !selectedEntry?.focus && selectedStatus === "empty"
             ? isSelectedToday
-              ? " Pick a time. Future-you is watching."
+              ? " When?"
               : isFutureSelected
-                ? " Pick a time. Future-you is watching."
+                ? " When?"
                 : isPastSelected
-                  ? " Record what happened."
+                  ? " Log."
                   : " Use Edit day to lock in your plan."
             : ""}
         </div>
@@ -99,9 +124,9 @@ export function MonthInspector({
         )}
 
         {isSelectedToday && isPastPlannedTime && (
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#92400e" }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: "#7a6f62", opacity: 0.85 }}>
             Planned for {overduePlannedTimeLabel}
-            {overdueDurationLabel ? ` (${overdueDurationLabel})` : ""}. Update this so your log stays accurate.
+            {overdueDurationLabel ? ` (${overdueDurationLabel})` : ""}.
           </div>
         )}
       </div>

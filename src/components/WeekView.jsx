@@ -18,13 +18,14 @@ export function WeekView({
   const [mon, tue, wed, thu, fri, sat, sun] = days;
   const stackBottomRow = isPhone;
 
-  function tileProps(dateObj) {
+  function tileProps(dateObj, { isTopRow = false } = {}) {
     const iso = toISODate(dateObj);
     return {
       dateObj,
       entry: entriesByISO[iso],
       todayISO,
       isPhone,
+      isTopRow: isPhone && isTopRow,
       onOpenEditor,
       onMarkTodayCompleted,
       onMarkTodaySkipped,
@@ -33,7 +34,7 @@ export function WeekView({
 
   return (
     <>
-      <div style={{ marginTop: 4, fontSize: 12, opacity: 0.62, fontWeight: 700 }}>
+      <div style={{ marginTop: 4, fontSize: 12, opacity: 0.62, fontWeight: 600 }}>
         Tap any day card to edit details.
       </div>
       <div style={{ marginTop: 14 }}>
@@ -47,9 +48,9 @@ export function WeekView({
             maxWidth: isPhone ? 520 : 640,
           }}
         >
-          <WeekDayTile {...tileProps(mon)} />
-          <WeekDayTile {...tileProps(tue)} />
-          <WeekDayTile {...tileProps(wed)} />
+          <WeekDayTile {...tileProps(mon, { isTopRow: true })} />
+          <WeekDayTile {...tileProps(tue, { isTopRow: true })} />
+          <WeekDayTile {...tileProps(wed, { isTopRow: true })} />
         </div>
 
         <div
@@ -79,15 +80,15 @@ export function WeekView({
           gap: 10,
         }}
       >
-        <Button onClick={onPrevWeek} style={{ width: "100%", minHeight: 44, whiteSpace: "nowrap", fontWeight: 700 }}>
+        <Button onClick={onPrevWeek} style={{ width: "100%", minHeight: 44, whiteSpace: "nowrap", fontWeight: 600 }}>
           {isPhone ? "◀ Prev" : "◀ Previous week"}
         </Button>
 
-        <Button onClick={onResetWeek} style={{ width: "100%", minHeight: 44, whiteSpace: "nowrap", fontWeight: 700 }}>
+        <Button onClick={onResetWeek} style={{ width: "100%", minHeight: 44, whiteSpace: "nowrap", fontWeight: 600 }}>
           This week
         </Button>
 
-        <Button onClick={onNextWeek} style={{ width: "100%", minHeight: 44, whiteSpace: "nowrap", fontWeight: 700 }}>
+        <Button onClick={onNextWeek} style={{ width: "100%", minHeight: 44, whiteSpace: "nowrap", fontWeight: 600 }}>
           {isPhone ? "Next ▶" : "Next week ▶"}
         </Button>
       </div>

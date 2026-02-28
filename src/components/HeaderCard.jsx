@@ -92,8 +92,9 @@ export function HeaderCard({
                     height: "100%",
                     width: `${progressPercent}%`,
                     background:
-                      "linear-gradient(90deg, rgba(212,174,112,0.92) 0%, rgba(232,204,140,0.9) 56%, rgba(245,224,175,0.85) 100%)",
+                      "linear-gradient(90deg, rgba(223,240,224,0.94) 0%, rgba(199,226,204,0.88) 52%, rgba(172,210,181,0.82) 100%)",
                     borderRadius: 999,
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.46)",
                     transition: "width 180ms ease",
                   }}
                 />
@@ -172,6 +173,8 @@ export function HeaderCard({
                 padding: "12px 13px",
                 minHeight: 82,
                 boxShadow: "0 4px 14px rgba(16, 24, 40, 0.04)",
+                color: THEME.ink,
+                WebkitTextFillColor: THEME.ink,
                 cursor: "pointer",
                 outline: "none",
               }}
@@ -197,8 +200,9 @@ export function HeaderCard({
                     height: "100%",
                     width: `${progressPercent}%`,
                     background:
-                      "linear-gradient(90deg, rgba(212,174,112,0.92) 0%, rgba(232,204,140,0.9) 56%, rgba(245,224,175,0.85) 100%)",
+                      "linear-gradient(90deg, rgba(223,240,224,0.94) 0%, rgba(199,226,204,0.88) 52%, rgba(172,210,181,0.82) 100%)",
                     borderRadius: 999,
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.46)",
                     transition: "width 180ms ease",
                   }}
                 />
@@ -209,8 +213,11 @@ export function HeaderCard({
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10 }}>
             <Pill style={{ minWidth: 0, padding: "13px 14px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, gap: 10 }}>
-                <div style={{ fontWeight: 600 }}>🔥 Streak: {streaks.current}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, gap: 10, lineHeight: 1.1 }}>
+                <div style={{ fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <span aria-hidden style={{ fontSize: 14, lineHeight: 1, transform: "translateY(-0.5px)" }}>🔥</span>
+                  <span>Streak: {streaks.current}</span>
+                </div>
                 <div style={{ opacity: 0.72, fontWeight: 600 }}>Best: {streaks.best}</div>
               </div>
             </Pill>

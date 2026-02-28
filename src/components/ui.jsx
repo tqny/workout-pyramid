@@ -61,7 +61,7 @@ export function Button({ children, onClick, style, disabled = false }) {
         background: "#fff9ef",
         color: THEME.ink,
         padding: "10px 13px",
-        fontWeight: 700,
+        fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         boxShadow: restingShadow,
         transition: "transform 120ms ease, box-shadow 120ms ease",
@@ -141,7 +141,7 @@ export function BrandMark({ view, weekRangeLabel, monthLabel }) {
           </svg>
         </div>
         <div style={{ lineHeight: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.15, opacity: 0.66 }}>WORKOUT</div>
+          <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.15, opacity: 0.66 }}>WORKOUT</div>
           <div style={{ fontSize: 22, fontWeight: 700, marginTop: 4 }}>PYRAMID</div>
           <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.6, marginTop: 8 }}>
             Plan. Commit. Confirm.

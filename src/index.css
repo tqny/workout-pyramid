@@ -29,4 +29,30 @@ input,
 textarea,
 select {
   font: inherit;
+  color: inherit;
+}
+
+button {
+  -webkit-text-fill-color: currentColor;
+}
+
+@media (max-width: 760px) {
+  a,
+  a:visited,
+  a:hover,
+  a:active {
+    color: #111827;
+  }
+
+  a[x-apple-data-detectors],
+  a[href^="x-apple-data-detectors"],
+  a[href^="tel"],
+  a[href^="mailto"],
+  a[href^="sms"] {
+    color: #111827 !important;
+    text-decoration: none !important;
+    -webkit-text-fill-color: #111827 !important;
+    font: inherit !important;
+    line-height: inherit !important;
+  }
 }

@@ -131,19 +131,20 @@ export function statusStyle(status) {
   if (status === "planned") {
     return {
       background:
-        "linear-gradient(180deg, rgba(250, 241, 209, 0.95) 0%, rgba(240, 224, 176, 0.9) 52%, rgba(230, 210, 145, 0.8) 100%)",
-      border: "1px solid rgba(182, 139, 66, 0.3)",
+        "linear-gradient(180deg, rgba(252,246,229,0.95) 0%, rgba(244,231,195,0.90) 52%, rgba(234,214,165,0.82) 100%)",
+      border: "1px solid rgba(191,158,95,0.30)",
     };
   }
   if (status === "skipped") {
     return {
       background:
-        "linear-gradient(180deg, rgba(247, 224, 219, 0.94) 0%, rgba(235, 199, 191, 0.88) 52%, rgba(224, 176, 167, 0.8) 100%)",
-      border: "1px solid rgba(179, 102, 92, 0.27)",
+        "linear-gradient(180deg, rgba(250,236,232,0.95) 0%, rgba(240,214,207,0.9) 52%, rgba(228,190,180,0.82) 100%)",
+      border: "1px solid rgba(181,129,117,0.30)",
     };
   }
   return {
-    background: "linear-gradient(180deg, rgba(248, 240, 228, 0.96) 0%, rgba(241, 230, 214, 0.94) 100%)",
-    border: "1px solid #e1d2bf",
+    background:
+      "linear-gradient(180deg, rgba(255,253,248,0.98) 0%, rgba(250,244,235,0.96) 56%, rgba(245,235,220,0.93) 100%)",
+    border: "1px solid rgba(224, 210, 189, 0.92)",
   };
 }
