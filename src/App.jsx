@@ -21,7 +21,6 @@ import { HeaderCard } from "./components/HeaderCard";
 import { InstallAppModal } from "./components/InstallAppModal";
 import { MonthView } from "./components/MonthView";
 import { ProductActionsBar } from "./components/ProductActionsBar";
-import { WelcomeModal } from "./components/WelcomeModal";
 import { WeekView } from "./components/WeekView";
 import { WeeklyReviewModal } from "./components/WeeklyReviewModal";
 import { useCommitmentFlow } from "./hooks/useCommitmentFlow";
@@ -42,7 +41,6 @@ export default function App() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [hasPassedEntryGate, setHasPassedEntryGate] = useState(false);
   const [showAdminMetricsModal, setShowAdminMetricsModal] = useState(false);
   const [notice, setNotice] = useState(null);
@@ -217,9 +215,7 @@ export default function App() {
   }
 
   function markTodayCompletedWithUndo() {
-    const previousEntry = todayEntry ? { ...todayEntry } : null;
     commitment.markTodayCompleted();
-    setQuickStatusNotice("Marked today as done.", previousEntry);
   }
 
   function markTodaySkippedWithUndo() {
@@ -228,17 +224,12 @@ export default function App() {
     setQuickStatusNotice("Marked today as skipped.", previousEntry);
   }
 
-  function closeWelcomeModal() {
-    setShowWelcomeModal(false);
-  }
-
   function enterApp() {
     setHasPassedEntryGate(true);
     setView("week");
     setWeekOffset(0);
     setMonthOffset(0);
     setMonthFocusISO(todayISO);
-    setShowWelcomeModal(true);
   }
 
   function handleMonthCellClick(iso) {
@@ -307,7 +298,9 @@ export default function App() {
     },
   };
 
-  if (!hasPassedEntryGate) {
+  const canAccessMain = hasPassedEntryGate || !!cloudSync.user;
+
+  if (!canAccessMain) {
     return (
       <AuthGate
         cloudSync={cloudSync}
@@ -399,7 +392,7 @@ export default function App() {
       </div>
 
       <CommitmentModal
-        open={!showWelcomeModal && commitment.isCommitModalOpen}
+        open={commitment.isCommitModalOpen}
         onClose={commitment.closeCommitModal}
         step={commitment.commitStep}
         commitTime={commitment.commitTime}
@@ -460,11 +453,6 @@ export default function App() {
       <AdminMetricsModal
         open={showAdminMetricsModal}
         onClose={() => setShowAdminMetricsModal(false)}
-      />
-
-      <WelcomeModal
-        open={showWelcomeModal}
-        onClose={closeWelcomeModal}
       />
 
       <WeeklyReviewModal

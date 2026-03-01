@@ -109,16 +109,19 @@ export function MonthCell({
         e.currentTarget.style.boxShadow = isSelected ? selectedShadow : restingShadow;
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <div
-          style={{
-            fontSize: compact ? 11 : 12,
-            fontWeight: 600,
-            color: headlineColor,
-          }}
-        >
-          {dayNum}
-        </div>
+      <div
+        style={{
+          position: "absolute",
+          top: compact ? 6 : 8,
+          left: compact ? 7 : 10,
+          fontSize: compact ? 11 : 12,
+          fontWeight: 600,
+          color: headlineColor,
+          zIndex: 2,
+          pointerEvents: "none",
+        }}
+      >
+        {dayNum}
       </div>
       {isToday && <div style={todayMarkerStyle} aria-label="Today">💪</div>}
 
@@ -130,7 +133,7 @@ export function MonthCell({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "20px 8px 12px",
+            padding: "26px 8px 12px",
             textAlign: "center",
             pointerEvents: "none",
           }}

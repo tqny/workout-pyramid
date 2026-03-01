@@ -28,8 +28,7 @@ function nextMondayISO() {
 async function enterAppAsGuest(page) {
   await expect(page.getByRole('button', { name: 'Use app as guest' })).toBeVisible();
   await page.getByRole('button', { name: 'Use app as guest' }).click();
-  await expect(page.getByText('Welcome to Workout Pyramid')).toBeVisible();
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByText('Training today?')).toBeVisible();
 }
 
 test.beforeEach(async ({ page }) => {

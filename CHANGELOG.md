@@ -14,10 +14,14 @@ All notable changes to this project are documented in this file.
 - README and contribution workflow updated to enforce auditable delivery standards.
 - Refined warm-light visual system: softer typography weights, warmer calendar/card surfaces, and status colors tuned to muted warm green/yellow/red.
 - Header metrics now support editable weekly goals via the progress card, with balanced top-bar layout and unified neutral styling for install/admin action pills.
-- Entry flow now opens with a dedicated auth gate on every visit (sign in/create account/guest), then shows onboarding before revealing the main app in week view.
-- Welcome modal streamlined to a single-continue path with refreshed gradient cards and numbered practical setup guidance.
+- Entry flow now opens with a dedicated auth gate for signed-out users (sign in/create account/guest), while signed-in users proceed directly into the app.
+- Welcome modal removed; guest or signed-in entry now lands directly in the main app flow.
 - Week/month card polish: centered status headlines, compact mobile labels, emoji quick actions, aligned streak/progress typography, and rose-gold + lighter-gold status gradients propagated across planned/skipped surfaces.
 - iOS/mobile text-color hardening prevents blue auto-link/button text drift and keeps action/status copy in ink tones.
+- Commitment modal action buttons now share the same status gradients used by main day cards (green complete / rose rest day), including the enabled `Commit time` action.
+- Month-view date numerals are pinned to top-left to prevent overlap with centered status copy.
+- Week navigation controls are width-capped to align with the lower 4-day row on desktop.
+- Quick-action notice for `Marked today as done` (with `Undo`) is removed from the action bar surface.
 - UI interaction quality sprint:
   - modal dialogs now use focus trapping, `Escape` handling, and focus restore for keyboard accessibility;
   - action bar now has clearer primary/secondary hierarchy;

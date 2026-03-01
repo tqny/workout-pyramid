@@ -282,19 +282,28 @@ export function AuthGate({ cloudSync, onContinue, onContinueGuest }) {
                     />
                   </div>
 
-                  <Button
-                    onClick={authMode === "signin" ? signIn : signUp}
-                    disabled={!email || !password || isBusy}
-                    style={{ width: "100%" }}
-                  >
-                    {authMode === "signin"
-                      ? isAuthenticating
-                        ? "Signing in..."
-                        : "Sign in"
-                      : isAuthenticating
-                        ? "Creating..."
-                        : "Create account"}
-                  </Button>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Button
+                      onClick={authMode === "signin" ? signIn : signUp}
+                      disabled={!email || !password || isBusy}
+                      style={{
+                        flex: 1,
+                        ...(authMode === "signin" ? authTabActiveStyle : authTabIdleStyle),
+                      }}
+                    >
+                      {isAuthenticating ? (authMode === "signin" ? "Signing in..." : "Creating...") : "Continue"}
+                    </Button>
+
+                    <Button
+                      onClick={onContinueGuest}
+                      style={{
+                        flex: 1,
+                        ...(authMode === "signup" ? authTabActiveStyle : authTabIdleStyle),
+                      }}
+                    >
+                      Use app as guest
+                    </Button>
+                  </div>
 
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
                     <button
@@ -337,9 +346,11 @@ export function AuthGate({ cloudSync, onContinue, onContinueGuest }) {
                 </>
               )}
 
-              <Button onClick={onContinueGuest} style={{ width: "100%", opacity: 0.9 }}>
-                Use app as guest
-              </Button>
+              {!isConfigured && (
+                <Button onClick={onContinueGuest} style={{ width: "100%", opacity: 0.9 }}>
+                  Use app as guest
+                </Button>
+              )}
             </>
           )}
 
