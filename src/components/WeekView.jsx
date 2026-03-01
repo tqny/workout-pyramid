@@ -74,10 +74,12 @@ export function WeekView({
 
       <div
         style={{
-          marginTop: 16,
+          margin: "16px auto 0",
           display: "grid",
           gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
           gap: 10,
+          width: "100%",
+          maxWidth: stackBottomRow ? 520 : 860,
         }}
       >
         <Button onClick={onPrevWeek} style={{ width: "100%", minHeight: 44, whiteSpace: "nowrap", fontWeight: 600 }}>

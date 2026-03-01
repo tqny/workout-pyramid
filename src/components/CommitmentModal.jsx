@@ -1,4 +1,5 @@
 import React from "react";
+import { statusStyle } from "../app/store-utils";
 import { Button, ModalShell } from "./ui";
 
 export function CommitmentModal({
@@ -12,6 +13,9 @@ export function CommitmentModal({
   onBack,
   onSave,
 }) {
+  const yesButtonStyle = statusStyle("completed");
+  const restButtonStyle = statusStyle("skipped");
+
   return (
     <ModalShell open={open} onClose={onClose} noCloseOnBackdrop={step === "ask"} ariaLabel="Daily commitment">
       <div style={{ padding: 24 }}>
@@ -33,8 +37,7 @@ export function CommitmentModal({
                   flex: 1,
                   padding: "16px 20px",
                   fontSize: 16,
-                  background: "rgba(187, 247, 208, 0.65)",
-                  border: "1px solid rgba(16,185,129,0.35)",
+                  ...yesButtonStyle,
                 }}
               >
                 Yes, I am
@@ -45,8 +48,7 @@ export function CommitmentModal({
                   flex: 1,
                   padding: "16px 20px",
                   fontSize: 16,
-                  background: "rgba(254, 202, 202, 0.60)",
-                  border: "1px solid rgba(239,68,68,0.35)",
+                  ...restButtonStyle,
                 }}
               >
                 Rest day
@@ -91,8 +93,9 @@ export function CommitmentModal({
                   flex: 2,
                   padding: "14px 20px",
                   fontSize: 16,
-                  background: commitTime ? "rgba(187, 247, 208, 0.65)" : "#f3f6fb",
-                  border: commitTime ? "1px solid rgba(16,185,129,0.35)" : "1px solid #e6e9ef",
+                  ...(commitTime ? yesButtonStyle : {}),
+                  background: commitTime ? yesButtonStyle.background : "#f3f6fb",
+                  border: commitTime ? yesButtonStyle.border : "1px solid #e6e9ef",
                   opacity: commitTime ? 1 : 0.5,
                 }}
               >
